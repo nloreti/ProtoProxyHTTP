@@ -2,7 +2,7 @@ package application;
 
 public interface ConnectionHandler {
 
-	public ConnectionImpl getConnection();
+	public Connection getConnection();
 
 	public void free(ConnectionImpl connection);
 
