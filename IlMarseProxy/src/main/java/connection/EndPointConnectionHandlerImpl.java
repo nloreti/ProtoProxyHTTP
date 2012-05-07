@@ -1,17 +1,19 @@
-package application;
+package connection;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class ConnectionHandlerImpl implements ConnectionHandler {
+import application.DinamicProxyConfiguration;
+
+public class EndPointConnectionHandlerImpl implements EndPointConnectionHandler {
 
 	InetSocketAddress sockAddress;
 	private BlockingQueue<Connection> connections;
 	private DinamicProxyConfiguration configuration = DinamicProxyConfiguration
 			.getInstance();
 
-	public ConnectionHandlerImpl(final InetSocketAddress sockAddress) {
+	public EndPointConnectionHandlerImpl(final InetSocketAddress sockAddress) {
 		this.sockAddress = sockAddress;
 		this.connections = new LinkedBlockingQueue<Connection>();
 	}

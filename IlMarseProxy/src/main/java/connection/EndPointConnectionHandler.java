@@ -1,6 +1,6 @@
-package application;
+package connection;
 
-public interface ConnectionHandler {
+public interface EndPointConnectionHandler {
 
 	public Connection getConnection();
 
