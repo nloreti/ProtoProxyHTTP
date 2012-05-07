@@ -1,5 +1,5 @@
 package model;
 
-public class HttpRequest {
+public interface HttpRequest {
 
 }
