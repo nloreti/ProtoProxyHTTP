@@ -3,16 +3,16 @@ package application;
 import java.io.InputStream;
 import java.net.InetAddress;
 
-import model.HttpRequest;
-import model.HttpResponse;
+import model.HttpRequestStringImpl;
+import model.HTTPResponse;
 
 public interface Connection {
 
-	public void send(HttpResponse response);
+	public void send(HTTPResponse response);
 
-	public void send(HttpRequest request);
+	public void send(HttpRequestStringImpl request);
 
-	public HttpResponse receive();
+	public HTTPResponse receive();
 
 	public InputStream getInputStream();
 

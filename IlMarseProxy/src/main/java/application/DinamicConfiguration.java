@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement(name = "configuration")
 @SuppressWarnings("restriction")
 public class DinamicConfiguration {
-
+	//#TODO: Para que sea dinámico, deben ser volatile ya que en otro caso, después de actualiar los valores no van a ser visibles por otros threads.
 	@XmlElement(name = "maxThreads")
 	protected Integer maxThreads;
 
