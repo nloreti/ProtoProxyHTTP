@@ -2,9 +2,9 @@ package application;
 
 import java.io.InputStream;
 
-import model.HTTPRequest;
-import model.HTTPResponse;
+import model.HttpRequest;
 import model.HttpRequestImpl;
+import model.HttpResponse;
 import connection.Connection;
 
 public class ResolverThread implements Runnable {
@@ -22,31 +22,32 @@ public class ResolverThread implements Runnable {
 	}
 
 	public void run() {
-		HTTPRequest request = null;
-		HTTPResponse response = null;
+		HttpRequest request = null;
+		HttpResponse response = null;
 
 		request = this.getRequest();
-		response = this.getResponse();
+		response = this.getResponse(request);
 		this.sendResponse(response);
 
 	}
 
-	private void sendResponse(final HTTPResponse response) {
+	private void sendResponse(final HttpResponse response) {
 		this.client.send(response);
+
 	}
 
-	private HTTPResponse getResponse(final HTTPRequest request) {
+	private HttpResponse getResponse(final HttpRequest request) {
 
-		HTTPResponse response;
+		HttpResponse response;
 
 		response = this.recursiveGetResponse(request);
 
 		return response;
 	}
 
-	private HTTPResponse recursiveGetResponse(final HTTPRequest request) {
+	private HttpResponse recursiveGetResponse(final HttpRequest request) {
 
-		HTTPResponse response = null;
+		HttpResponse response = null;
 
 		this.server = this.getConnection(request.getHost());
 		this.server.send(request);
@@ -64,9 +65,9 @@ public class ResolverThread implements Runnable {
 		return connection;
 	}
 
-	private HTTPRequest getRequest() {
+	private HttpRequest getRequest() {
 
-		HTTPRequest request;
+		HttpRequest request;
 		final InputStream input = this.client.getInputStream();
 		request = new HttpRequestImpl(input);
 		return request;
