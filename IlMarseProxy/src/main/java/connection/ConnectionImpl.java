@@ -9,7 +9,9 @@ import java.net.SocketException;
 
 import model.HttpRequest;
 import model.HttpResponse;
+import model.HttpResponseImpl;
 import application.DinamicProxyConfiguration;
+import exceptions.BadResponseException;
 
 public class ConnectionImpl implements Connection {
 
@@ -61,13 +63,23 @@ public class ConnectionImpl implements Connection {
 
 	}
 
-	public HttpResponse receive() {
+	public HttpResponse receive() throws BadResponseException {
 		// TODO Auto-generated method stub
 		// TODO: Esto hay que arreglarlo con Marse o quien haya hecho la
 		// response. Tiene que recibir un stream
 		// y pasarselo al HttpResponse como parametro para que devuelva la
-		// respuesta.
-		return null;
+		// respuesta
+
+		InputStream stream = null;
+		try {
+			stream = this.socket.getInputStream();
+		} catch (final IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return new HttpResponseImpl(stream);
+
 	}
 
 	public InputStream getInputStream() {

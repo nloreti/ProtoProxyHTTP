@@ -5,6 +5,7 @@ import java.net.InetAddress;
 
 import model.HttpRequest;
 import model.HttpResponse;
+import exceptions.BadResponseException;
 
 public interface Connection {
 
@@ -12,7 +13,7 @@ public interface Connection {
 
 	public void send(HttpRequest request);
 
-	public HttpResponse receive();
+	public HttpResponse receive() throws BadResponseException;
 
 	public InputStream getInputStream();
 
