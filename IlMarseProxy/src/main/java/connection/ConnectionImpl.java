@@ -7,10 +7,11 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
 
-import model.HTTPRequest;
-import model.HTTPResponse;
+import model.HttpRequest;
+import model.HttpResponse;
 import model.HttpResponseImpl;
 import application.DinamicProxyConfiguration;
+import exceptions.BadResponseException;
 
 public class ConnectionImpl implements Connection {
 
@@ -48,7 +49,7 @@ public class ConnectionImpl implements Connection {
 
 	/* Fin de Constructores */
 
-	public void send(final HTTPResponse response) {
+	public void send(final HttpResponse response) {
 		// TODO Auto-generated method stub
 		// Una vez que se tiene la respuesta hay que mandar por el OutPutStream
 		// del socket la misma. Para esto tiene que haber un metodo en
@@ -56,19 +57,29 @@ public class ConnectionImpl implements Connection {
 
 	}
 
-	public void send(final HTTPRequest request) {
+	public void send(final HttpRequest request) {
 		// TODO Auto-generated method stub
 		// IDEM QUE PARA EL PUNTO ANTERIOR.
 
 	}
 
-	public HttpResponseImpl receive() {
+	public HttpResponse receive() throws BadResponseException {
 		// TODO Auto-generated method stub
 		// TODO: Esto hay que arreglarlo con Marse o quien haya hecho la
 		// response. Tiene que recibir un stream
 		// y pasarselo al HttpResponse como parametro para que devuelva la
-		// respuesta.
-		return null;
+		// respuesta
+
+		InputStream stream = null;
+		try {
+			stream = this.socket.getInputStream();
+		} catch (final IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return new HttpResponseImpl(stream);
+
 	}
 
 	public InputStream getInputStream() {
