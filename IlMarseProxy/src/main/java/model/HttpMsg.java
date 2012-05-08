@@ -30,15 +30,15 @@ public abstract class HttpMsg {
 
 	abstract void parseFirstLine(String line);
 
-	private String readLine() throws BadResponseException {
+	protected String readLine() throws BadResponseException {
 		final ByteArrayOutputStream b = new ByteArrayOutputStream();
 
 		int c;
-		while ((c = this.read(in)) != '\r' && c != '\n' && c != -1) {
+		while ((c = this.read()) != '\r' && c != '\n' && c != -1) {
 			b.write(c);
 		}
 
-		if ((c == '\r' && this.read(in) != '\n') || c == -1) {
+		if ((c == '\r' && this.read() != '\n') || c == -1) {
 			if (c != -1) {
 				throw new BadResponseException();
 			} else {
@@ -53,7 +53,7 @@ public abstract class HttpMsg {
 		return line;
 	}
 
-	private int read(final InputStream in) {
+	private int read() {
 		try {
 			return in.read();
 		} catch (final InterruptedIOException e) {

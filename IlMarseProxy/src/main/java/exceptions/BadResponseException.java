@@ -1,6 +1,6 @@
 package exceptions;
 
-public class BadResponseException extends Exception {
+public class BadResponseException extends RuntimeException {
 
 	public BadResponseException() {
 	}
