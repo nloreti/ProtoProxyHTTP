@@ -8,7 +8,9 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
+import exceptions.BadConnectionException;
 import exceptions.BadResponseException;
+import exceptions.BadServerException;
 
 public abstract class HttpMsg {
 	public enum HttpVersion{
@@ -20,7 +22,7 @@ public abstract class HttpMsg {
 	public HttpMsg(){
 		in = null;
 	}
-	
+
 	public HttpMsg(final InputStream in) throws BadResponseException {
 		this.in=in;
 		if(in!=null){
@@ -42,7 +44,7 @@ public abstract class HttpMsg {
 			if (c != -1) {
 				throw new BadResponseException();
 			} else {
-				//	#TODO: include Exception			throw new BadConnectionException();
+				throw new BadConnectionException();
 			}
 		}
 		String line = null;
@@ -57,17 +59,16 @@ public abstract class HttpMsg {
 		try {
 			return in.read();
 		} catch (final InterruptedIOException e) {
-			//			#TODO: include Exception			throw new BadServerException();
+			throw new BadServerException();
 		} catch (final IOException e) {
-			//			#TODO: include Exception			throw new BadConnectionException();
+			throw new BadConnectionException();
 		}
-		return -1; //#TODO: remove this
 	}
-	
+
 	private void parseHeaders() throws BadResponseException{
 		String s=readLine();
 		if(s!=null && !"".equals(s)){
-		parseFirstLine(s);
+			parseFirstLine(s);
 		}
 		while(null!=(s=readLine()) && !"".equals(s)){
 			parseHeaderLine(s);
