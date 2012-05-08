@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class HttpRequestStringImpl implements HTTPRequest{
+public class HttpRequestStringImpl implements HttpRequest{
 	private enum ImplementedMethods{
 		GET,HEAD,POST
 	}

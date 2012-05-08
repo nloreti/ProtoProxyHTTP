@@ -2,10 +2,13 @@ package application;
 
 import java.io.InputStream;
 
-import model.HTTPRequest;
-import model.HTTPResponse;
+import model.HttpRequest;
 import model.HttpRequestImpl;
+import model.HttpResponse;
+import connection.CollectionConnectionHandler;
+import connection.CollectionConnectionHandlerImpl;
 import connection.Connection;
+import connection.EndPointConnectionHandler;
 
 public class ResolverThread implements Runnable {
 
@@ -17,56 +20,66 @@ public class ResolverThread implements Runnable {
 	private ProxyConfiguration configuration = DinamicProxyConfiguration
 			.getInstance();
 
+	private CollectionConnectionHandler connections = CollectionConnectionHandlerImpl
+			.getInstance();
+
 	public ResolverThread(final Connection client) {
 		this.client = client;
 	}
 
 	public void run() {
-		HTTPRequest request = null;
-		HTTPResponse response = null;
+		HttpRequest request = null;
+		HttpResponse response = null;
 
 		request = this.getRequest();
-		response = this.getResponse();
+		response = this.getResponse(request);
 		this.sendResponse(response);
 
 	}
 
-	private void sendResponse(final HTTPResponse response) {
+	private void sendResponse(final HttpResponse response) {
 		this.client.send(response);
+
 	}
 
-	private HTTPResponse getResponse(final HTTPRequest request) {
+	private HttpResponse getResponse(final HttpRequest request) {
 
-		HTTPResponse response;
+		HttpResponse response = null;
 
-		response = this.recursiveGetResponse(request);
-
-		return response;
-	}
-
-	private HTTPResponse recursiveGetResponse(final HTTPRequest request) {
-
-		HTTPResponse response = null;
-
-		this.server = this.getConnection(request.getHost());
+		// TODO: Cableado, hay que pedirlo al request.
+		this.server = this.getConnection("google.com");
 		this.server.send(request);
-
 		response = this.server.receive();
 
 		return response;
-
 	}
+
+	// private HttpResponse recursiveGetResponse(final HttpRequest request) {
+	//
+	// HttpResponse response = null;
+	//
+	// this.server = this.getConnection(request.getHost());
+	// this.server.send(request);
+	//
+	// response = this.server.receive();
+	//
+	// return response;
+	//
+	// }
 
 	// TODO: Implementar el getConnection desde un host porque no hay otra
-	// forma.
+	// forma, agregar un mapa con conexiones a host y que el mismo tenga varias
+	// conexiones disponbiles para ese host.
+
 	public Connection getConnection(final String host) {
-		final Connection connection = null;
-		return connection;
+		final EndPointConnectionHandler hostConnections = this.connections
+				.getEndPointConnectionHandler(host);
+		return hostConnections.getConnection();
 	}
 
-	private HTTPRequest getRequest() {
+	private HttpRequest getRequest() {
 
-		HTTPRequest request;
+		HttpRequest request;
 		final InputStream input = this.client.getInputStream();
 		request = new HttpRequestImpl(input);
 		return request;
