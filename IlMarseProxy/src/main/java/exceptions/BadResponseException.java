@@ -1,14 +1,17 @@
 package exceptions;
 
-public class BadResponseException extends Exception {
-
-	public BadResponseException(final String string) {
-		// TODO Auto-generated constructor stub
-	}
+public class BadResponseException extends RuntimeException {
 
 	public BadResponseException() {
-		// TODO Auto-generated constructor stub
+	}
+	
+	public BadResponseException(String string) {
+		super(string);
 	}
 
-	// TODO: HACER TODA LA EXCEPT
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 }
