@@ -11,6 +11,10 @@ public class ProxyHTTP implements Runnable {
 
 	SocketHandler socketHandler = new ThreadSocketHandler();
 
+	public ProxyHTTP() {
+		super();
+	}
+
 	public void run() {
 
 		// Chequeo si levanto la configuracion del proxy.
@@ -50,10 +54,18 @@ public class ProxyHTTP implements Runnable {
 				.println("Max Threads: " + this.configuration.getMaxThreads());
 		System.out
 				.println("Min Threads: " + this.configuration.getMinThreads());
-		System.out.println("TimeOut Client: "
+		System.out.println("Chain Proxy IP: "
+				+ this.configuration.getChainProxyIP());
+		System.out.println("Chain Proxy Port: "
+				+ this.configuration.getChainProxyPort());
+		System.out.println("Proxy Backlog: "
+				+ this.configuration.getProxyBackLog());
+		System.out.println("Time out client: "
 				+ this.configuration.getTimeOutToClient());
-		System.out.println("TimeOut Server: "
+		System.out.println("Time out Server: "
 				+ this.configuration.getTimeOutToServer());
+		System.out.println("Servers per connection: "
+				+ this.configuration.getMaxServersPerConnection());
 
 	}
 

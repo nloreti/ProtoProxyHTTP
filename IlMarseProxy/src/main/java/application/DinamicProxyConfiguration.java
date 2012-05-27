@@ -11,7 +11,7 @@ public class DinamicProxyConfiguration implements ProxyConfiguration {
 
 	static DinamicProxyConfiguration proxyInstance;
 	DinamicConfiguration configuration;
-	private static String path = "conf/configuration.xml";
+	private static String path = "configuration/configuration.xml";
 
 	public DinamicProxyConfiguration() {
 		this.configuration = this.parseXML(path);
@@ -26,22 +26,21 @@ public class DinamicProxyConfiguration implements ProxyConfiguration {
 		return proxyInstance;
 	}
 
-	@SuppressWarnings("restriction")
 	private DinamicConfiguration parseXML(final String path) {
 		JAXBContext context;
 		DinamicConfiguration configuration;
 
 		try {
 
-			context = JAXBContext
-					.newInstance("application/DinamicConfiguration");
+			context = JAXBContext.newInstance("application");
 			final Unmarshaller unmarshaller = context.createUnmarshaller();
 			configuration = (DinamicConfiguration) unmarshaller
 					.unmarshal(new File(path));
+
 		} catch (final JAXBException e) {
+			e.printStackTrace();
 			configuration = null;
 		}
-
 		return configuration;
 	}
 
@@ -71,11 +70,11 @@ public class DinamicProxyConfiguration implements ProxyConfiguration {
 	}
 
 	public int getInicialThreads() {
-		return this.configuration.getinicialThreads();
+		return this.configuration.getInicialThreads();
 	}
 
 	public void setInicialThreads(final int inicialThreads) {
-		this.configuration.setinicialThreads(inicialThreads);
+		this.configuration.setInicialThreads(inicialThreads);
 	}
 
 	public boolean hasProxy() {
@@ -125,7 +124,7 @@ public class DinamicProxyConfiguration implements ProxyConfiguration {
 	}
 
 	public int getMaxServersPerConnection() {
-		return this.getMaxServersPerConnection();
+		return this.configuration.getMaxServersPerConnection();
 	}
 
 	public void setMaxServersPerConnection(final int maxServersPerConnection) {
@@ -142,7 +141,7 @@ public class DinamicProxyConfiguration implements ProxyConfiguration {
 	}
 
 	public int getTimeOutToServer() {
-		return this.getTimeOutToServer();
+		return this.configuration.gettimeOutServer();
 
 	}
 

@@ -9,6 +9,7 @@ import connection.CollectionConnectionHandler;
 import connection.CollectionConnectionHandlerImpl;
 import connection.Connection;
 import connection.EndPointConnectionHandler;
+import exceptions.BadResponseException;
 
 public class ResolverThread implements Runnable {
 
@@ -49,23 +50,15 @@ public class ResolverThread implements Runnable {
 		// TODO: Cableado, hay que pedirlo al request.
 		this.server = this.getConnection("google.com");
 		this.server.send(request);
-		response = this.server.receive();
+		try {
+			response = this.server.receive();
+		} catch (final BadResponseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		return response;
 	}
-
-	// private HttpResponse recursiveGetResponse(final HttpRequest request) {
-	//
-	// HttpResponse response = null;
-	//
-	// this.server = this.getConnection(request.getHost());
-	// this.server.send(request);
-	//
-	// response = this.server.receive();
-	//
-	// return response;
-	//
-	// }
 
 	// TODO: Implementar el getConnection desde un host porque no hay otra
 	// forma, agregar un mapa con conexiones a host y que el mismo tenga varias

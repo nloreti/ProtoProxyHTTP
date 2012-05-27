@@ -7,14 +7,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "", propOrder = { "inicialThreads", "maxThreads", "minThreads",
+@XmlType(name = "", propOrder = { "maxThreads", "minThreads", "inicialThreads",
 		"hasProxy", "chainProxyIp", "chainProxyPort", "webServerPort",
 		"proxyPort", "maxServersPerConnection", "proxyBackLog",
 		"webServerBackLog", "timeOutClient", "timeOutServer" })
 @XmlRootElement(name = "configuration")
-@SuppressWarnings("restriction")
 public class DinamicConfiguration {
-	//#TODO: Para que sea dinámico, deben ser volatile ya que en otro caso, después de actualiar los valores no van a ser visibles por otros threads.
+	// #TODO: Para que sea dinámico, deben ser volatile ya que en otro caso,
+	// después de actualiar los valores no van a ser visibles por otros threads.
 	@XmlElement(name = "maxThreads")
 	protected Integer maxThreads;
 
@@ -70,11 +70,11 @@ public class DinamicConfiguration {
 		this.minThreads = minThreads;
 	}
 
-	public Integer getinicialThreads() {
+	public Integer getInicialThreads() {
 		return this.inicialThreads;
 	}
 
-	public void setinicialThreads(final Integer inicialThreads) {
+	public void setInicialThreads(final Integer inicialThreads) {
 		this.inicialThreads = inicialThreads;
 	}
 
