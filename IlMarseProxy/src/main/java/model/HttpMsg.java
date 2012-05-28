@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,7 +18,7 @@ public abstract class HttpMsg {
 		HTTP_1_0,HTTP_1_1,BAD_REQUEST
 	}
 	private Map<String,String> headers = new HashMap<String, String>();
-	private final InputStream in;
+	final InputStream in;
 
 	public HttpMsg(){
 		in = null;
@@ -55,15 +56,6 @@ public abstract class HttpMsg {
 		return line;
 	}
 
-	private int read() {
-		try {
-			return in.read();
-		} catch (final InterruptedIOException e) {
-			throw new BadServerException();
-		} catch (final IOException e) {
-			throw new BadConnectionException();
-		}
-	}
 
 	private void parseHeaders() throws BadResponseException{
 		String s=readLine();
@@ -93,5 +85,31 @@ public abstract class HttpMsg {
 	}
 	public void setHeader(String header, String value){
 		headers.put(header, value);
+	}
+	
+	protected int read() {
+		try {
+			return in.read();
+		} catch (final InterruptedIOException e) {
+			throw new BadServerException();
+		} catch (final IOException e) {
+			throw new BadConnectionException();
+		}
+	}
+	
+	void write(OutputStream out, int b) {
+		try {
+			out.write(b);
+		} catch (IOException e) {
+			throw new BadConnectionException();
+		}
+	}
+	
+	void write(OutputStream out, byte[] bytes) {
+		try {
+			out.write(bytes);
+		} catch (IOException e) {
+			throw new BadConnectionException();
+		}
 	}
 }
