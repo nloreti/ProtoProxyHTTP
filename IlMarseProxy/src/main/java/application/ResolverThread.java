@@ -48,7 +48,7 @@ public class ResolverThread implements Runnable {
 		HttpResponse response = null;
 
 		// TODO: Cableado, hay que pedirlo al request.
-		this.server = this.getConnection("google.com");
+		this.server = this.getConnection(request.getHost());
 		this.server.send(request);
 		try {
 			response = this.server.receive();

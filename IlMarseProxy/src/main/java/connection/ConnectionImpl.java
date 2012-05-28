@@ -2,6 +2,7 @@ package connection;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -54,13 +55,16 @@ public class ConnectionImpl implements Connection {
 		// Una vez que se tiene la respuesta hay que mandar por el OutPutStream
 		// del socket la misma. Para esto tiene que haber un metodo en
 		// HttpResponse que dado un OutPutStream permita sacarlo por ahi
+		final OutputStream out = this.getOutputStream();
+		response.writeStream(out);
 
 	}
 
 	public void send(final HttpRequest request) {
 		// TODO Auto-generated method stub
 		// IDEM QUE PARA EL PUNTO ANTERIOR.
-
+		final OutputStream out = this.getOutputStream();
+		request.writeStream(out);
 	}
 
 	public HttpResponse receive() throws BadResponseException {
@@ -80,6 +84,17 @@ public class ConnectionImpl implements Connection {
 
 		return new HttpResponseImpl(stream);
 
+	}
+
+	public OutputStream getOutputStream() {
+		try {
+			return this.socket.getOutputStream();
+		} catch (final IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+
+		}
+		return null;
 	}
 
 	public InputStream getInputStream() {
