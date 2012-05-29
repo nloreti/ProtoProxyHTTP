@@ -31,10 +31,10 @@ public class CollectionConnectionHandlerImpl implements
 
 		// Split al STring
 		final String[] hostData = endPoint.split(":", 2);
-
+		System.out.println("VECTOR:" + hostData[0]);
 		// Divido
 		final String host = hostData[0];
-		final int port = Integer.valueOf(hostData[1]);
+		final int port = Integer.valueOf("80");
 
 		// Creo el InetSocket
 		socketAddress = new InetSocketAddress(host, port);
