@@ -16,6 +16,7 @@ public abstract class HttpMsg {
 
 	private Map<String, List<String>> headers;
 	private String protocol;
+	private byte[] body;
 
 	public HttpMsg() {
 		this.headers = new HashMap<String, List<String>>();
@@ -89,7 +90,15 @@ public abstract class HttpMsg {
 		this.headers.get(header).add(value);
 	}
 
-	public List<String> getHeader(final String key) {
+	public String getHeader(final String key) {
+		final List<String> values = this.headers.get(key);
+		if (values == null) {
+			return null;
+		}
+		return values.get(0);
+	}
+
+	public List<String> getHeaders(final String key) {
 		return this.headers.get(key);
 	}
 
@@ -113,9 +122,19 @@ public abstract class HttpMsg {
 		this.protocol = protocol;
 	}
 
+	public byte[] getBody() {
+		return this.body;
+	}
+
+	public void setBody(final byte[] body) {
+		this.body = body;
+	}
+
 	// Dado un OutputStream tiene que escribir por el mismo su respuesta;
 	// Osea response.writeStream(out) es escribi por el stream out tu respuesta;
 	abstract void writeStream(OutputStream out);
+
+	abstract void writeBodyStream(OutputStream out);
 
 	abstract String getHost();
 

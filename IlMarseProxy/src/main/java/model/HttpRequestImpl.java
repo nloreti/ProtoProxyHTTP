@@ -7,6 +7,8 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Map.Entry;
 
 import exceptions.BadResponseException;
 
@@ -49,7 +51,7 @@ public class HttpRequestImpl extends HttpMsg {
 			this.parseHeaderLine(headerLine);
 		}
 
-		if (this.getHeader("Host") == null) {
+		if (this.getHost() == null) {
 			System.out.println("FALTA HOST EN EL REQUEST");
 		}
 
@@ -211,14 +213,65 @@ public class HttpRequestImpl extends HttpMsg {
 
 	@Override
 	public void writeStream(final OutputStream out) {
-		// TODO Auto-generated method stub
+		byte[] bytes;
+		bytes = (this.method + " " + this.requestURI + " " + this.getProtocol() + "\r\n")
+				.getBytes();
+		this.write(out, bytes);
+		for (final Entry<String, List<String>> e : this.getHeaders().entrySet()) {
+			for (final String headerValue : e.getValue()) {
+				bytes = (e.getKey() + ": " + headerValue + "\r\n").getBytes();
+				this.write(out, bytes);
+			}
+		}
+		bytes = "\r\n".getBytes();
+		this.write(out, bytes);
+		this.writeBodyStream(out);
 
 	}
 
 	@Override
 	public String getHost() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.getHeader("Host");
+	}
+
+	@Override
+	void writeBodyStream(final OutputStream out) {
+
+		if (this.getHeader("Content-Length") != null) {
+			int contentLength = Integer.valueOf(this
+					.getHeader("Content-Length"));
+
+			while (--contentLength >= 0) {
+				final byte b = (byte) this.read(this.in);
+				this.write(out, b);
+			}
+		} else if ("close".equals(this.getHeader("Proxy-Connection"))) {
+
+			int b;
+			while ((b = this.read(this.in)) != -1) {
+				this.write(out, b);
+			}
+		}
+		this.setBody(new byte[0]);
+
+	}
+
+	public void write(final OutputStream out, final int c) {
+		try {
+			out.write(c);
+		} catch (final IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public void write(final OutputStream out, final byte[] bytes) {
+		try {
+			out.write(bytes);
+		} catch (final IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }
