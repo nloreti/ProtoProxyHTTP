@@ -1,6 +1,10 @@
 package model;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,8 +21,10 @@ public abstract class HttpMsg {
 	private Map<String, List<String>> headers;
 	private String protocol;
 	private byte[] body;
+	private InputStream in;
 
-	public HttpMsg() {
+	public HttpMsg(final InputStream in) {
+		this.in = in;
 		this.headers = new HashMap<String, List<String>>();
 	}
 
@@ -130,9 +136,42 @@ public abstract class HttpMsg {
 		this.body = body;
 	}
 
+	public String readLine() {
+		final ByteArrayOutputStream b = new ByteArrayOutputStream();
+
+		int c;
+		while ((c = this.read()) != '\r' && c != '\n' && c != -1) {
+			b.write(c);
+
+		}
+
+		if ((c == '\r' && this.read() != '\n') || c == -1) {
+			if (c != -1) {
+				System.out.println("Fin de línea incorrecto.");
+			}
+		}
+
+		String line = null;
+		try {
+			line = new String(b.toByteArray(), "ISO-8859-1");
+		} catch (final UnsupportedEncodingException e) {
+		}
+
+		return line;
+	}
+
+	public int read() {
+		try {
+			return this.in.read();
+		} catch (final IOException e) {
+			e.printStackTrace();
+		}
+		return 0;
+	}
+
 	// Dado un OutputStream tiene que escribir por el mismo su respuesta;
 	// Osea response.writeStream(out) es escribi por el stream out tu respuesta;
-	abstract void writeStream(OutputStream out);
+	public abstract void writeStream(OutputStream out);
 
 	abstract void writeBodyStream(OutputStream out);
 

@@ -1,10 +1,8 @@
 package model;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -28,7 +26,7 @@ public class HttpRequestImpl extends HttpMsg {
 					return m;
 				}
 			}
-			return null;// Devolver Error;
+			return null;// TODO: Devolver Error;
 
 		}
 	}
@@ -36,18 +34,18 @@ public class HttpRequestImpl extends HttpMsg {
 	private ImplementedMethod method;
 	private URI requestURI;
 	private HttpVersion version;
-	private InputStream in;
 
 	public HttpRequestImpl(final InputStream in) throws BadResponseException {
 
-		this.in = in;
+		// this.in = in;
+		super(in);
 
-		final String[] firstLine = this.readLine(in).split(" ");
+		final String[] firstLine = this.readLine().split(" ");
 		this.parseFirstLine(firstLine);
 
 		final String empty = "";
 		String headerLine = null;
-		while (!empty.equals(headerLine = this.readLine(in))) {
+		while (!empty.equals(headerLine = this.readLine())) {
 			this.parseHeaderLine(headerLine);
 		}
 
@@ -55,39 +53,6 @@ public class HttpRequestImpl extends HttpMsg {
 			System.out.println("FALTA HOST EN EL REQUEST");
 		}
 
-	}
-
-	private String readLine(final InputStream in) {
-		final ByteArrayOutputStream b = new ByteArrayOutputStream();
-
-		int c;
-		while ((c = this.read(in)) != '\r' && c != '\n' && c != -1) {
-			b.write(c);
-
-		}
-
-		if ((c == '\r' && this.read(in) != '\n') || c == -1) {
-			if (c != -1) {
-				System.out.println("Fin de línea incorrecto.");
-			}
-		}
-
-		String line = null;
-		try {
-			line = new String(b.toByteArray(), "ISO-8859-1");
-		} catch (final UnsupportedEncodingException e) {
-		}
-
-		return line;
-	}
-
-	public int read(final InputStream in) {
-		try {
-			return in.read();
-		} catch (final IOException e) {
-			e.printStackTrace();
-		}
-		return 0;
 	}
 
 	@Override
@@ -167,7 +132,8 @@ public class HttpRequestImpl extends HttpMsg {
 				+ "		Cookie: s_nr=1336338075458; tutorial_showLeftBar=yes; s_cc=true; s_sq=%5B%5BB%5D%5D";
 		final InputStream a = new InputStream() {
 			int i = 0;
-			String a = aux;
+
+			// String a = aux;
 
 			@Override
 			public int read() throws IOException {
@@ -190,7 +156,8 @@ public class HttpRequestImpl extends HttpMsg {
 		final String aux2 = req.toString();
 		final InputStream b = new InputStream() {
 			int i = 0;
-			String a = aux2;
+
+			// String a = aux2;
 
 			@Override
 			public int read() throws IOException {
@@ -242,13 +209,13 @@ public class HttpRequestImpl extends HttpMsg {
 					.getHeader("Content-Length"));
 
 			while (--contentLength >= 0) {
-				final byte b = (byte) this.read(this.in);
+				final byte b = (byte) this.read();
 				this.write(out, b);
 			}
 		} else if ("close".equals(this.getHeader("Proxy-Connection"))) {
 
 			int b;
-			while ((b = this.read(this.in)) != -1) {
+			while ((b = this.read()) != -1) {
 				this.write(out, b);
 			}
 		}
