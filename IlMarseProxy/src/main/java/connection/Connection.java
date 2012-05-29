@@ -3,17 +3,17 @@ package connection;
 import java.io.InputStream;
 import java.net.InetAddress;
 
-import model.HttpRequest;
-import model.HttpResponse;
+import model.HttpRequestImpl;
+import model.HttpResponseImpl;
 import exceptions.BadResponseException;
 
 public interface Connection {
 
-	public void send(HttpResponse response);
+	public void send(HttpRequestImpl request);
 
-	public void send(HttpRequest request);
+	public void send(HttpResponseImpl response);
 
-	public HttpResponse receive() throws BadResponseException;
+	public HttpResponseImpl receive() throws BadResponseException;
 
 	public InputStream getInputStream();
 

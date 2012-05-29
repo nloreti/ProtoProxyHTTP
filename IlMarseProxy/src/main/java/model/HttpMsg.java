@@ -113,6 +113,8 @@ public abstract class HttpMsg {
 		this.protocol = protocol;
 	}
 
+	// Dado un OutputStream tiene que escribir por el mismo su respuesta;
+	// Osea response.writeStream(out) es escribi por el stream out tu respuesta;
 	abstract void writeStream(OutputStream out);
 
 	abstract String getHost();

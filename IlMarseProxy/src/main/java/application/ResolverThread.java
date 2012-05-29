@@ -2,9 +2,8 @@ package application;
 
 import java.io.InputStream;
 
-import model.HttpRequest;
 import model.HttpRequestImpl;
-import model.HttpResponse;
+import model.HttpResponseImpl;
 import connection.CollectionConnectionHandler;
 import connection.CollectionConnectionHandlerImpl;
 import connection.Connection;
@@ -29,8 +28,8 @@ public class ResolverThread implements Runnable {
 	}
 
 	public void run() {
-		HttpRequest request = null;
-		HttpResponse response = null;
+		HttpRequestImpl request = null;
+		HttpResponseImpl response = null;
 
 		request = this.getRequest();
 		response = this.getResponse(request);
@@ -38,14 +37,14 @@ public class ResolverThread implements Runnable {
 
 	}
 
-	private void sendResponse(final HttpResponse response) {
+	private void sendResponse(final HttpResponseImpl response) {
 		this.client.send(response);
 
 	}
 
-	private HttpResponse getResponse(final HttpRequest request) {
+	private HttpResponseImpl getResponse(final HttpRequestImpl request) {
 
-		HttpResponse response = null;
+		HttpResponseImpl response = null;
 
 		// TODO: Cableado, hay que pedirlo al request.
 		this.server = this.getConnection(request.getHost());
@@ -70,9 +69,9 @@ public class ResolverThread implements Runnable {
 		return hostConnections.getConnection();
 	}
 
-	private HttpRequest getRequest() {
+	private HttpRequestImpl getRequest() {
 
-		HttpRequest request;
+		HttpRequestImpl request;
 		final InputStream input = this.client.getInputStream();
 		request = new HttpRequestImpl(input);
 		return request;
