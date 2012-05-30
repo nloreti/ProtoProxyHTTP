@@ -160,6 +160,7 @@ public abstract class HttpMsg {
 		try {
 			line = new String(b.toByteArray(), "ISO-8859-1");
 		} catch (final UnsupportedEncodingException e) {
+			e.printStackTrace();
 		}
 
 		return line;
@@ -167,9 +168,10 @@ public abstract class HttpMsg {
 
 	public int read() {
 		try {
+			// System.out.println("READ: " + this.in.toString());
 			return this.in.read();
 		} catch (final IOException e) {
-			e.printStackTrace();
+			// this.read();
 		}
 		return 0;
 	}

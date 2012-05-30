@@ -64,7 +64,7 @@ public class HttpResponseImpl extends HttpMsg {
 			throw new BadResponseException("Protocolo no soportado.");
 		}
 		this.pVersion = pVersion;
-
+		this.setProtocol(pVersion);
 		try {
 			this.statusCode = Integer.valueOf(line[1]);
 		} catch (final NumberFormatException e) {

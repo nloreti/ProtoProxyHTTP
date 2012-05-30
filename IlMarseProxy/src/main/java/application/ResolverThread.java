@@ -49,10 +49,17 @@ public class ResolverThread implements Runnable {
 
 			// Retornamos la respuesta.
 			try {
-				// final boolean respKeepAlive = this.keepAlive(response);
+				final boolean respKeepAlive = this.keepAlive(response);
 				this.setHeaders(response, request);
 				this.sendResponse(response);
 				this.server = null;
+				if (this.hostHandler != null) {
+					if (respKeepAlive) {
+						this.hostHandler.free(this.server);
+					} else {
+						this.hostHandler.drop(this.server);
+					}
+				}
 			} catch (final Exception e) {
 				System.out.println("Fallo el R & Response");
 				e.printStackTrace();
@@ -99,7 +106,9 @@ public class ResolverThread implements Runnable {
 
 	private boolean keepAlive(final HttpResponseImpl response) {
 		boolean keepAlive;
+
 		keepAlive = "keep-alive".equals(response.getHeader("Connection"));
+
 		keepAlive &= response.getProtocol().equals("HTTP/1.1");
 
 		return keepAlive;
@@ -168,6 +177,7 @@ public class ResolverThread implements Runnable {
 		InputStream stream = null;
 		try {
 			stream = this.client.getInputStream();
+			System.out.println("STREAM: " + stream);
 		} catch (final Exception e) {
 			System.out.println("El cliente no responde o cerro la conexion");
 		}
