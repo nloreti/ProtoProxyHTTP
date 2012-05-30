@@ -1,5 +1,6 @@
 package connection;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -37,12 +38,26 @@ public class ConnectionHandlerImpl implements ConnectionHandler {
 		return connection;
 	}
 
-	public void free(final ConnectionImpl connection) {
+	public void free(final Connection connection) {
 		if (connection != null) {
-			connection.close();// TODO:que pasa si no se cierra
+			try {
+				if (connection.getInputStream().available() != 0) {
+					// Por precaución no se reusa la conexión (podría estar
+					// sucio el inputStream).
+					this.drop(connection);
+					return;
+				}
+			} catch (final IOException e) {
+				this.drop(connection);
+			}
 			this.connections.offer(connection);
 		}
+	}
 
+	public void drop(final Connection connection) {
+		if (connection != null) {
+			connection.close();
+		}
 	}
 
 }

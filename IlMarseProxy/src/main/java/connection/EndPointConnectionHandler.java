@@ -4,6 +4,8 @@ public interface EndPointConnectionHandler {
 
 	public Connection getConnection();
 
-	public void free(ConnectionImpl connection);
+	public void free(Connection connection);
+
+	public void drop(final Connection connection);
 
 }

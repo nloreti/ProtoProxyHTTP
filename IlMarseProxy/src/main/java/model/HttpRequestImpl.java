@@ -55,6 +55,10 @@ public class HttpRequestImpl extends HttpMsg {
 
 	}
 
+	public void setRequestURI(final URI requestURI) {
+		this.requestURI = requestURI;
+	}
+
 	@Override
 	void parseFirstLine(final String[] line) {
 		if (line.length != 3) {

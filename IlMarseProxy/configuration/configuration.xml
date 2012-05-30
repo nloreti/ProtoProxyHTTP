@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<configuration>
+	
+	
+	<!-- No es usan, quedan para futuras extensiones -->
+	<maxThreads>25</maxThreads>
+	<minThreads>1</minThreads>
+
+	<!-- -->	
+	<inicialThreads>50</inicialThreads>
+	<hasProxy>false</hasProxy>
+	<chainProxyIp>10.6.0.162</chainProxyIp>
+	<chainProxyPort>8080</chainProxyPort>
+	<webServerPort>9999</webServerPort>
+	<proxyPort>8090</proxyPort>
+	<maxServersPerConnection>100</maxServersPerConnection>
+	<timeOutClient>100000</timeOutClient>
+	<timeOutServer>100000</timeOutServer>
+	<proxyBackLog>50</proxyBackLog>
+	<webServerBackLog>30</webServerBackLog>
+</configuration>

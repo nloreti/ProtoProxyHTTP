@@ -87,6 +87,12 @@ public abstract class HttpMsg {
 		values.add(value);
 	}
 
+	public void replaceHeader(final String header, final String value) {
+		final List<String> values = new ArrayList<String>();
+		values.add(value);
+		this.headers.put(header, values);
+	}
+
 	public void addHeader(final String header, final String value) {
 		List<String> values = this.headers.get(header);
 		if (values == null) {
@@ -142,7 +148,6 @@ public abstract class HttpMsg {
 		int c;
 		while ((c = this.read()) != '\r' && c != '\n' && c != -1) {
 			b.write(c);
-
 		}
 
 		if ((c == '\r' && this.read() != '\n') || c == -1) {

@@ -23,7 +23,7 @@ public class HttpResponseImpl extends HttpMsg {
 	public HttpResponseImpl(final InputStream in) throws BadResponseException {
 		super(in);
 
-		final String[] requestLine = this.readLine().split(" ");
+		final String[] requestLine = this.readLine().split(" ", 3);
 
 		this.parseFirstLine(requestLine);
 
@@ -97,7 +97,10 @@ public class HttpResponseImpl extends HttpMsg {
 		try {
 			out.write(b);
 		} catch (final IOException e) {
-			// TODO Auto-generated catch block
+			System.out.println("PROBLEMA DE CONEXION CON EL CLIENTE");// TODO
+																		// Auto-generated
+																		// catch
+																		// block
 			e.printStackTrace();
 		}
 
@@ -108,7 +111,10 @@ public class HttpResponseImpl extends HttpMsg {
 		try {
 			out.write(bytes);
 		} catch (final IOException e) {
-			// TODO Auto-generated catch block
+			System.out.println("PROBLEMA DE CONEXION CON EL CLIENTE");// TODO
+																		// Auto-generated
+																		// catch
+																		// block
 			e.printStackTrace();
 		}
 	}
@@ -166,4 +172,18 @@ public class HttpResponseImpl extends HttpMsg {
 		return this.getHeader("Host");
 	}
 
+	@Override
+	public String toString() {
+		final StringBuffer b = new StringBuffer();
+
+		b.append(this.getProtocol() + " " + this.getStatusCode() + " "
+				+ this.getReasonPhrase() + "\r\n");
+		for (final Entry<String, List<String>> e : this.getHeaders().entrySet()) {
+			for (final String headerValue : e.getValue()) {
+				b.append(e.getKey() + ": " + headerValue + "\r\n");
+			}
+		}
+		b.append("\r\n");
+		return b.toString();
+	}
 }

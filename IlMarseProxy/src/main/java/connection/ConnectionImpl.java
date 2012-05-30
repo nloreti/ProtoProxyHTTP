@@ -16,10 +16,44 @@ import exceptions.BadResponseException;
 public class ConnectionImpl implements Connection {
 
 	private Socket socket;
+	private String host;
 	private DinamicProxyConfiguration configuration = DinamicProxyConfiguration
 			.getInstance();
 
 	/* Constructores */
+
+	public ConnectionImpl(final String host) {
+		try {
+			final String[] hostInfo = host.split(":", 2);
+			if (hostInfo.length > 2) {
+				throw new Exception();
+			}
+			this.host = hostInfo[0];
+			int port = 80;
+			if (hostInfo.length == 2) {
+				try {
+					port = Integer.valueOf(hostInfo[1]);
+				} catch (final NumberFormatException e) {
+					throw new Exception();
+				}
+			}
+			final InetAddress addr = InetAddress.getByName(hostInfo[0]);
+			this.setupConnection(addr, port);
+		} catch (final Exception e) {
+			System.out.println("Error en Connection");
+		}
+	}
+
+	private void setupConnection(final InetAddress ip, final int port) {
+		try {
+			this.socket = new Socket(ip, port);
+			this.socket.setSoTimeout(this.configuration.getTimeOutToServer());
+		} catch (final SocketException e) {
+			e.printStackTrace();
+		} catch (final IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 	public ConnectionImpl(final Socket socket) {
 		this.socket = socket;
@@ -54,16 +88,33 @@ public class ConnectionImpl implements Connection {
 		// Una vez que se tiene la respuesta hay que mandar por el OutPutStream
 		// del socket la misma. Para esto tiene que haber un metodo en
 		// HttpResponse que dado un OutPutStream permita sacarlo por ahi
-		final OutputStream out = this.getOutputStream();
-		response.writeStream(out);
+		// final OutputStream out = this.getOutputStream();
+		// response.writeStream(out);
+		OutputStream out;
+		try {
+			out = this.socket.getOutputStream();
+			response.writeStream(out);
+		} catch (final IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 
 	public void send(final HttpRequestImpl request) {
 		// TODO Auto-generated method stub
 		// IDEM QUE PARA EL PUNTO ANTERIOR.
-		final OutputStream out = this.getOutputStream();
-		request.writeStream(out);
+		// final OutputStream out = this.getOutputStream();
+		// request.writeStream(out);
+		//
+		OutputStream out;
+		try {
+			out = this.socket.getOutputStream();
+			request.writeStream(out);
+		} catch (final IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public HttpResponseImpl receive() throws BadResponseException {
@@ -77,10 +128,8 @@ public class ConnectionImpl implements Connection {
 		try {
 			stream = this.socket.getInputStream();
 		} catch (final IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Fallo el recieve de ConnectionImpl");
 		}
-
 		return new HttpResponseImpl(stream);
 
 	}
@@ -124,6 +173,10 @@ public class ConnectionImpl implements Connection {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	public String getHost() {
+		return this.host;
 	}
 
 	public boolean isClosed() {
