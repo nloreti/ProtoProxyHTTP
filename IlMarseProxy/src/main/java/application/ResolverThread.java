@@ -40,20 +40,19 @@ public class ResolverThread implements Runnable {
 		// request = this.getRequest();
 		// response = this.getResponse(request);
 		// this.sendResponse(response);
-
+		RequestFilter rf = RequestFilter.getInstance();
 		do {
 			// Obtenemos Request y Response.
 			try {
 				request = this.getRequest();
-				System.out.println("Request " + request);
 				response = this.getResponse(request);
-				System.out.println("Response " + response);
 			} catch (final Exception e) {
 				System.out.println("Fallo el R & Response");
 				this.proxyKeepAlive = false;
 				e.printStackTrace();
 			}
 
+			response = rf.doFilter( request, response );
 			// Retornamos la respuesta.
 			try {
 				final boolean respKeepAlive = this.keepAlive(response);

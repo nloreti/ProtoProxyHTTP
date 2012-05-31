@@ -191,4 +191,14 @@ public class HttpResponseImpl extends HttpMsg {
 		return b.toString();
 	}
 
+	public int getContentLength() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public boolean containsType(String string) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

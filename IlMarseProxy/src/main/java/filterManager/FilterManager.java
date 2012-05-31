@@ -49,7 +49,8 @@ public class FilterManager {
 //			System.out.println("readin");
 //			if (in.read(data) == -1)
 //				throw new SocketException("Connection closed prematurely");
-			System.out.println(fromServer.readLine());
+			System.out.print(fromServer.readLine().replace('\64', '\n'));
+			System.out.println();
 		}
 		// Close the socket and its streams
 		socket.close();
