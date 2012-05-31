@@ -17,6 +17,7 @@ public class ResolverThread implements Runnable {
 	Connection client;
 	Connection server;
 	EndPointConnectionHandler hostHandler;
+	boolean proxyKeepAlive = true;
 
 	// Configuracion del proxy
 	private ProxyConfiguration configuration = DinamicProxyConfiguration
@@ -41,9 +42,12 @@ public class ResolverThread implements Runnable {
 			// Obtenemos Request y Response.
 			try {
 				request = this.getRequest();
+				System.out.println("Request " + request);
 				response = this.getResponse(request);
+				System.out.println("Response " + response);
 			} catch (final Exception e) {
 				System.out.println("Fallo el R & Response");
+				this.proxyKeepAlive = false;
 				e.printStackTrace();
 			}
 
@@ -62,10 +66,12 @@ public class ResolverThread implements Runnable {
 				}
 			} catch (final Exception e) {
 				System.out.println("Fallo el R & Response");
+				this.close();
 				e.printStackTrace();
 			}
 
-		} while (this.keepAlive(request) && !this.client.isClosed());
+		} while (this.proxyKeepAlive && this.keepAlive(request)
+				&& !this.client.isClosed());
 		this.close();
 	}
 

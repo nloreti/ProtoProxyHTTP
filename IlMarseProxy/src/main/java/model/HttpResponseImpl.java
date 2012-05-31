@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import exceptions.BadResponseException;
-import exceptions.BadServerException;
 
 public class HttpResponseImpl extends HttpMsg {
 
@@ -97,10 +96,7 @@ public class HttpResponseImpl extends HttpMsg {
 		try {
 			out.write(b);
 		} catch (final IOException e) {
-			System.out.println("PROBLEMA DE CONEXION CON EL CLIENTE");// TODO
-																		// Auto-generated
-																		// catch
-																		// block
+			System.out.println("PROBLEMA DE CONEXION CON EL CLIENTE");
 			e.printStackTrace();
 		}
 
@@ -111,10 +107,7 @@ public class HttpResponseImpl extends HttpMsg {
 		try {
 			out.write(bytes);
 		} catch (final IOException e) {
-			System.out.println("PROBLEMA DE CONEXION CON EL CLIENTE");// TODO
-																		// Auto-generated
-																		// catch
-																		// block
+			System.out.println("PROBLEMA DE CONEXION CON EL CLIENTE");
 			e.printStackTrace();
 		}
 	}
@@ -131,10 +124,11 @@ public class HttpResponseImpl extends HttpMsg {
 
 			for (final Entry<String, List<String>> e : this.getHeaders()
 					.entrySet()) {
-				bytes = (e.getKey() + ": " + e.getValue().get(0) + "\r\n")
-						.getBytes();
-				// TODO: Chequear esto
-				out.write(bytes);
+				for (final String headerValue : e.getValue()) {
+					bytes = (e.getKey() + ": " + headerValue + "\r\n")
+							.getBytes();
+					out.write(bytes);
+				}
 			}
 			bytes = "\r\n".getBytes();
 			out.write(bytes);
@@ -154,7 +148,7 @@ public class HttpResponseImpl extends HttpMsg {
 			while (--clength >= 0) {
 				final int c = this.read();
 				if (c == -1) {
-					throw new BadServerException();
+					System.out.println("Se cerro la conexion del cliente");
 				}
 				this.write(out, c);
 			}
@@ -163,6 +157,8 @@ public class HttpResponseImpl extends HttpMsg {
 			while ((c = this.read()) != -1) {
 				this.write(out, c);
 			}
+		} else if ("chunked".equals(this.getHeader("Transfer-Encoding"))) {
+			System.out.println("CAYO EN CHUNKED!");
 		}
 
 	}
@@ -186,4 +182,5 @@ public class HttpResponseImpl extends HttpMsg {
 		b.append("\r\n");
 		return b.toString();
 	}
+
 }
