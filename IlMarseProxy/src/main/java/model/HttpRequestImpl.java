@@ -5,10 +5,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.rmi.ServerException;
 import java.util.List;
 import java.util.Map.Entry;
 
-import exceptions.BadResponseException;
+import exceptions.EncodingException;
+import exceptions.ResponseException;
 
 public class HttpRequestImpl extends HttpMsg {
 
@@ -35,7 +37,8 @@ public class HttpRequestImpl extends HttpMsg {
 	private URI requestURI;
 	private HttpVersion version;
 
-	public HttpRequestImpl(final InputStream in) throws BadResponseException {
+	public HttpRequestImpl(final InputStream in) throws ResponseException,
+			EncodingException, ServerException {
 
 		// this.in = in;
 		super(in);
@@ -122,7 +125,7 @@ public class HttpRequestImpl extends HttpMsg {
 	}
 
 	// ONLY FOR TESTING AND EXAMPLE
-	public static void test() {
+	public static void test() throws ServerException, EncodingException {
 		final String aux = "GET /javase/1.4.2/docs/api/resources/inherit.gif HTTP/1.1\r\nHost: docs.oracle.com\r\nConnection: keep-alive\r\n"
 				+ "		Cache-Control: max-age=0\r\n"
 				+ "		If-Modified-Since: Wed, 07 Sep 2011 12:58:37 GMT\r\n"
@@ -154,7 +157,7 @@ public class HttpRequestImpl extends HttpMsg {
 			// req.getVersion());
 			// System.out.println(req.getHeaders());
 			System.out.println(req);
-		} catch (final BadResponseException e) {
+		} catch (final ResponseException e) {
 			e.printStackTrace();
 		}
 		final String aux2 = req.toString();
@@ -177,13 +180,13 @@ public class HttpRequestImpl extends HttpMsg {
 			// req.getVersion());
 			// System.out.println(req.getHeaders());
 			System.out.println(req);
-		} catch (final BadResponseException e) {
+		} catch (final ResponseException e) {
 			e.printStackTrace();
 		}
 	}
 
 	@Override
-	public void writeStream(final OutputStream out) {
+	public void writeStream(final OutputStream out) throws ServerException {
 		byte[] bytes;
 		bytes = (this.method + " " + this.requestURI + " " + this.getProtocol() + "\r\n")
 				.getBytes();
@@ -206,7 +209,8 @@ public class HttpRequestImpl extends HttpMsg {
 	}
 
 	@Override
-	void writeBodyStream(final OutputStream out) {
+	void writeBodyStream(final OutputStream out) throws ServerException,
+			NumberFormatException {
 
 		if (this.getHeader("Content-Length") != null) {
 			int contentLength = Integer.valueOf(this

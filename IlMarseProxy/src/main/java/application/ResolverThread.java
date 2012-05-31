@@ -3,6 +3,7 @@ package application;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.rmi.ServerException;
 
 import model.HttpRequestImpl;
 import model.HttpResponseImpl;
@@ -10,6 +11,8 @@ import connection.CollectionConnectionHandler;
 import connection.CollectionConnectionHandlerImpl;
 import connection.Connection;
 import connection.EndPointConnectionHandler;
+import exceptions.EncodingException;
+import exceptions.ResponseException;
 
 public class ResolverThread implements Runnable {
 
@@ -131,7 +134,18 @@ public class ResolverThread implements Runnable {
 
 		this.server = this.getConnection(request.getHost());
 		this.server.send(request);
-		response = this.server.receive();
+		try {
+			response = this.server.receive();
+		} catch (final ServerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (final ResponseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (final EncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		// System.out.println(response);
 		return response;

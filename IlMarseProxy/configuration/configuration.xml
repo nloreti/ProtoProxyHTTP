@@ -7,7 +7,7 @@
 	<minThreads>1</minThreads>
 
 	<!-- -->	
-	<inicialThreads>50</inicialThreads>
+	<inicialThreads>500</inicialThreads>
 	<hasProxy>false</hasProxy>
 	<chainProxyIp>10.6.0.162</chainProxyIp>
 	<chainProxyPort>8080</chainProxyPort>

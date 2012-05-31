@@ -5,10 +5,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.rmi.ServerException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import exceptions.EncodingException;
 
 public abstract class HttpMsg {
 	public enum HttpVersion {
@@ -27,49 +30,6 @@ public abstract class HttpMsg {
 		this.in = in;
 		this.headers = new HashMap<String, List<String>>();
 	}
-
-	// protected String readLine() throws BadResponseException {
-	// final ByteArrayOutputStream b = new ByteArrayOutputStream();
-	//
-	// int c;
-	// while ((c = this.read()) != '\r' && c != '\n' && c != -1) {
-	// b.write(c);
-	// }
-	//
-	// if ((c == '\r' && this.read() != '\n') || c == -1) {
-	// if (c != -1) {
-	// throw new BadResponseException();
-	// } else {
-	// throw new BadConnectionException();
-	// }
-	// }
-	// String line = null;
-	// try {
-	// line = new String(b.toByteArray(), "ISO-8859-1");
-	// } catch (final UnsupportedEncodingException e) {
-	// }
-	// return line;
-	// }
-
-	// private int read() {
-	// try {
-	// return this.in.read();
-	// } catch (final InterruptedIOException e) {
-	// throw new BadServerException();
-	// } catch (final IOException e) {
-	// throw new BadConnectionException();
-	// }
-	// }
-	//
-	// // private void parseHeaders() {
-	// String s = this.readLine();
-	// if (s != null && !"".equals(s)) {
-	// this.parseFirstLine(s);
-	// }
-	// while (null != (s = this.readLine()) && !"".equals(s)) {
-	// this.parseHeaderLine(s);
-	// }
-	// }
 
 	public void parseHeaderLine(final String line) {
 		final String[] aux = line.split(":", 2);
@@ -142,8 +102,9 @@ public abstract class HttpMsg {
 		this.body = body;
 	}
 
-	public String readLine() {
+	public String readLine() throws EncodingException, ServerException {
 		final ByteArrayOutputStream b = new ByteArrayOutputStream();
+		final String encoding = "ISO-8859-1";// Default Encoding
 
 		int c;
 		while ((c = this.read()) != '\r' && c != '\n' && c != -1) {
@@ -158,29 +119,29 @@ public abstract class HttpMsg {
 
 		String line = null;
 		try {
-			line = new String(b.toByteArray(), "ISO-8859-1");
+
+			line = new String(b.toByteArray(), encoding);
 		} catch (final UnsupportedEncodingException e) {
-			e.printStackTrace();
+			throw new EncodingException("ISO-8859-1");
 		}
 
 		return line;
 	}
 
-	public int read() {
+	public int read() throws ServerException {
 		try {
 			// System.out.println("READ: " + this.in.toString());
 			return this.in.read();
 		} catch (final IOException e) {
-			// this.read();
+			throw new ServerException("Connection Problem");
 		}
-		return 0;
 	}
 
 	// Dado un OutputStream tiene que escribir por el mismo su respuesta;
 	// Osea response.writeStream(out) es escribi por el stream out tu respuesta;
-	public abstract void writeStream(OutputStream out);
+	public abstract void writeStream(OutputStream out) throws ServerException;
 
-	abstract void writeBodyStream(OutputStream out);
+	abstract void writeBodyStream(OutputStream out) throws ServerException;
 
 	abstract String getHost();
 

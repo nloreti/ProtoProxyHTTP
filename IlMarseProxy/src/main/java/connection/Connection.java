@@ -2,10 +2,12 @@ package connection;
 
 import java.io.InputStream;
 import java.net.InetAddress;
+import java.rmi.ServerException;
 
 import model.HttpRequestImpl;
 import model.HttpResponseImpl;
-import exceptions.BadResponseException;
+import exceptions.EncodingException;
+import exceptions.ResponseException;
 
 public interface Connection {
 
@@ -13,7 +15,7 @@ public interface Connection {
 
 	public void send(HttpResponseImpl response);
 
-	public HttpResponseImpl receive() throws BadResponseException;
+	public HttpResponseImpl receive() throws ResponseException, ServerException, EncodingException;
 
 	public InputStream getInputStream();
 

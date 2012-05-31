@@ -4,10 +4,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.rmi.ServerException;
 import java.util.List;
 import java.util.Map.Entry;
 
-import exceptions.BadResponseException;
+import exceptions.EncodingException;
+import exceptions.ResponseException;
 
 public class HttpResponseImpl extends HttpMsg {
 
@@ -19,7 +21,8 @@ public class HttpResponseImpl extends HttpMsg {
 	// private int limit;
 	private boolean contentByClosedConnection = false;
 
-	public HttpResponseImpl(final InputStream in) throws BadResponseException {
+	public HttpResponseImpl(final InputStream in) throws ResponseException,
+			EncodingException, ServerException {
 		super(in);
 
 		final String[] requestLine = this.readLine().split(" ", 3);
@@ -55,19 +58,19 @@ public class HttpResponseImpl extends HttpMsg {
 	void parseFirstLine(final String[] line) {
 
 		if (line.length != 2 && line.length != 3) {
-			throw new BadResponseException();
+			throw new ResponseException();
 		}
 
 		final String pVersion = line[0];
 		if (!"HTTP/1.1".equals(pVersion) && !"HTTP/1.0".equals(pVersion)) {
-			throw new BadResponseException("Protocolo no soportado.");
+			throw new ResponseException("Protocolo no soportado.");
 		}
 		this.pVersion = pVersion;
 		this.setProtocol(pVersion);
 		try {
 			this.statusCode = Integer.valueOf(line[1]);
 		} catch (final NumberFormatException e) {
-			throw new BadResponseException();
+			throw new ResponseException();
 		}
 
 		if (line.length == 3) {
@@ -82,7 +85,7 @@ public class HttpResponseImpl extends HttpMsg {
 	// this.limit = limit;
 	// }
 
-	public byte[] getEntityBody() {
+	public byte[] getEntityBody() throws ServerException {
 		if (!this.completed) {
 			final ByteArrayOutputStream out = new ByteArrayOutputStream();
 			this.writeBodyStream(out);
@@ -133,6 +136,7 @@ public class HttpResponseImpl extends HttpMsg {
 			bytes = "\r\n".getBytes();
 			out.write(bytes);
 			this.writeBodyStream(out);
+
 		} catch (final IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -140,25 +144,29 @@ public class HttpResponseImpl extends HttpMsg {
 	}
 
 	@Override
-	void writeBodyStream(final OutputStream out) {
+	void writeBodyStream(final OutputStream out) throws ServerException {
 
-		if (this.getHeader("Content-Length") != null) {
-			int clength = Integer.valueOf(this.getHeader("Content-Length"));
+		try {
+			if (this.getHeader("Content-Length") != null) {
+				int clength = Integer.valueOf(this.getHeader("Content-Length"));
 
-			while (--clength >= 0) {
-				final int c = this.read();
-				if (c == -1) {
-					System.out.println("Se cerro la conexion del cliente");
+				while (--clength >= 0) {
+					final int c = this.read();
+					if (c == -1) {
+						System.out.println("Se cerro la conexion del cliente");
+					}
+					this.write(out, c);
 				}
-				this.write(out, c);
+			} else if (this.contentByClosedConnection) {
+				int c;
+				while ((c = this.read()) != -1) {
+					this.write(out, c);
+				}
+			} else if ("chunked".equals(this.getHeader("Transfer-Encoding"))) {
+				System.out.println("CAYO EN CHUNKED!");
 			}
-		} else if (this.contentByClosedConnection) {
-			int c;
-			while ((c = this.read()) != -1) {
-				this.write(out, c);
-			}
-		} else if ("chunked".equals(this.getHeader("Transfer-Encoding"))) {
-			System.out.println("CAYO EN CHUNKED!");
+		} catch (final Exception e) {
+			this.writeBodyStream(out);
 		}
 
 	}

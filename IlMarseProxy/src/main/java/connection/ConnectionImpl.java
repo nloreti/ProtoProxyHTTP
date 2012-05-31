@@ -7,11 +7,13 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
+import java.rmi.ServerException;
 
 import model.HttpRequestImpl;
 import model.HttpResponseImpl;
 import application.DinamicProxyConfiguration;
-import exceptions.BadResponseException;
+import exceptions.EncodingException;
+import exceptions.ResponseException;
 
 public class ConnectionImpl implements Connection {
 
@@ -117,7 +119,8 @@ public class ConnectionImpl implements Connection {
 		}
 	}
 
-	public HttpResponseImpl receive() throws BadResponseException {
+	public HttpResponseImpl receive() throws ResponseException,
+			ServerException, EncodingException {
 		// TODO Auto-generated method stub
 		// TODO: Esto hay que arreglarlo con Marse o quien haya hecho la
 		// response. Tiene que recibir un stream
