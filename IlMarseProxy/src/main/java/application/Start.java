@@ -9,6 +9,7 @@ public class Start {
 			final FilterSocketServer filterServer = new FilterSocketServer(
 					9001, InetAddress.getByName("localhost"),
 					new FilterHandler());
+
 			new Thread(filterServer).start();
 			final ProxyHTTP proxy = new ProxyHTTP();
 			proxy.run();

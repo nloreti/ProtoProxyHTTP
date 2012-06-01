@@ -249,4 +249,14 @@ public class HttpRequestImpl extends HttpMsg {
 		}
 	}
 
+	public String getMediaType() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String getDestinationIp() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
