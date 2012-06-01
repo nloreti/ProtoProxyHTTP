@@ -10,18 +10,17 @@ public class FilterHandler implements ConnectionHandler {
 
 	RequestFilter rf;
 
-	@Override
-	public void handle(Socket s) throws IOException {
+	public void handle(final Socket s) throws IOException {
 		// InputStream in = s.getInputStream();
 		// OutputStream out = s.getOutputStream();
-		BufferedReader fromClient = new BufferedReader(new InputStreamReader(
-				s.getInputStream()));
-		PrintWriter toClient = new PrintWriter(s.getOutputStream(), true);
+		final BufferedReader fromClient = new BufferedReader(
+				new InputStreamReader(s.getInputStream()));
+		final PrintWriter toClient = new PrintWriter(s.getOutputStream(), true);
 		// byte[] receiveBuf = new byte[BUFSIZE]; // Receive buffer
 		String response;
 		// Receive until client closes connection
 		do {
-			response = parse(fromClient.readLine());
+			response = this.parse(fromClient.readLine());
 			toClient.println(response);
 			// int recvMsgSize = 0;
 			// int totalSize = 0;
@@ -38,90 +37,107 @@ public class FilterHandler implements ConnectionHandler {
 		s.close(); // Close the socket. We are done with this client!
 	}
 
-	private String parse(String request) {
-		RequestFilter rf = RequestFilter.getInstance();
+	private String parse(final String request) {
+		final RequestFilter rf = RequestFilter.getInstance();
 		if (request.equals("HELP")) {
 			return "Manual for usage:\nType any command from the following list:\n\tBLOCK ACCESS blocks every access from the proxy.\n\tUNLOCK ACCESS grants access\n\tL33T ON turns l33t mode on\n\tL33T OFF turns l33t mode off\n\tBLOCK IP [ip] blocks the given [ip] or group of ip's\n\tUNLOCK IP [ip] unlocks the given [ip] or group of ip's\n\tBLOCK URI [uri] blocks the given [uri] or regular expression for uri\n\tUNLOCK URI [uri] unlocks the given uri or regular expression for uri's\n\tMAXSIZE [size] sets a max quantity of bytes that can pass throught the proxy, set on 0 for unlimited amount\n\tIMAGES ON turns on the flipping for images\n\tIMAGES OFF turns off the flipping for images\n\tBLOCK MEDIATYPE [media type] blocks the given [media type]\n\tUNLOCK MEDIATYPE [mediatype] unlocks the given [media type]\nEnd\n";
 		} else if (request.equals("BLOCK ACCESS")) {
-			if (!rf.access())
+			if (!rf.access()) {
 				return "ACCESS IS ALREADY BLOCKED";
+			}
 			rf.accessOff();
 			return "ACCESS BLOCKED";
 		} else if (request.equals("UNLOCK ACCESS")) {
-			if (rf.access())
+			if (rf.access()) {
 				return "ACCESS IS ALREADY UNLOCKED";
+			}
 			rf.accessOn();
 			return "ACCESS UNLOCKED";
 		} else if (request.equals("L33T ON")) {
-			if (rf.leet())
+			if (rf.leet()) {
 				return "L33T IS ALREADY ON";
+			}
 			rf.leetOn();
 			return "L33T IS NOW ON";
 		} else if (request.equals("L33T OFF")) {
-			if (!rf.leet())
+			if (!rf.leet()) {
 				return "L33T IS ALREADY OFF";
+			}
 			rf.leetOff();
 			return "L33T IS NOW OFF";
 		} else if (request.equals("IMAGES OFF")) {
-			if (!rf.images())
+			if (!rf.images()) {
 				return "IMAGES ARE ALREADY OFF";
+			}
 			rf.imagesOff();
 			return "IMAGES WILL STOP ROTATING";
 		} else if (request.equals("IMAGES ON")) {
-			if (rf.images())
+			if (rf.images()) {
 				return "IMAGES ARE ALREADY ON";
+			}
 			rf.imagesOn();
 			return "IMAGES WILL NOW ROTATE";
 		} else if (request.startsWith("BLOCK IP ")) {
-			String ip = request.substring(9);
-			if (!ip.matches("%d.%d.%d"))
+			final String ip = request.substring(9);
+			if (!ip.matches("%d.%d.%d")) {
 				return "INVALID IP";
-			if (!rf.blockIP(ip))
+			}
+			if (!rf.blockIP(ip)) {
 				return ip + " IS ALREADY BLOCKED";
+			}
 			return ip + " BLOCKED";
 		} else if (request.startsWith("UNLOCK IP ")) {
-			String ip = request.substring(10);
-			if (!ip.matches("%d.%d.%d"))
+			final String ip = request.substring(10);
+			if (!ip.matches("%d.%d.%d")) {
 				return "INVALID IP";
-			if (rf.unlockIP(ip))
+			}
+			if (rf.unlockIP(ip)) {
 				return ip + " NOT BLOCKED";
+			}
 			return ip + " UNLOCKED";
 		} else if (request.startsWith("BLOCK URI ")) {
-			String uri = request.substring(10);
+			final String uri = request.substring(10);
 			// urivalidator!
-			if (false)
+			if (false) {
 				return uri + " IS NOT A VALID URI";
-			if (!rf.blockUri(uri))
+			}
+			if (!rf.blockUri(uri)) {
 				return uri + " IS ALREADY BLOCKED";
+			}
 			return uri + " HAS BEEN BLOCKED";
 		} else if (request.startsWith("UNLOCK URI ")) {
-			String uri = request.substring(11);
+			final String uri = request.substring(11);
 			// urivalidator!
-			if (false)
+			if (false) {
 				return uri + "IS NOT A VALID URI";
-			if (!rf.unlockUri(uri))
+			}
+			if (!rf.unlockUri(uri)) {
 				return uri + "NOT BLOCKED";
+			}
 			return uri + "UNLOCKED";
 		} else if (request.startsWith("BLOCK MEDIATYPE ")) {
-			String mediaType = request.substring(16);
-			if (!rf.blockMediaType(mediaType))
+			final String mediaType = request.substring(16);
+			if (!rf.blockMediaType(mediaType)) {
 				return mediaType + " IS ALREADY BLOCKED";
+			}
 			return mediaType + " BLOCKED";
 		} else if (request.startsWith("UNLOCK MEDIATYPE ")) {
-			String mediaType = request.substring(17);
-			if (!rf.unlockMediaType(mediaType))
+			final String mediaType = request.substring(17);
+			if (!rf.unlockMediaType(mediaType)) {
 				return mediaType + " NOT BLOCKED";
+			}
 			return mediaType + " UNLOCKED";
 		} else if (request.startsWith("SET MAXSIZE ")) {
-			String maxSize = request.substring(12);
+			final String maxSize = request.substring(12);
 			int ms;
 			try {
 				ms = Integer.valueOf(maxSize);
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				return "NOT A VALID INTEGER";
 			}
-			if (rf.setMaxSize(ms))
+			if (rf.setMaxSize(ms)) {
 				return "MAXSIZE SET TO " + maxSize;
+			}
 			return "MAXSIZE IS NOW OFF";
 		} else if (request.equals("EXIT")) {
 			return "BYE!";
