@@ -139,6 +139,18 @@ public class FilterHandler implements ConnectionHandler {
 				return "MAXSIZE SET TO " + maxSize;
 			}
 			return "MAXSIZE IS NOW OFF";
+		} else if (request.startsWith("GET BLOCKS")) { //A mi gusto tenemos que hacer un solo servidor que provea todo, por eso lo puse aca.
+			return "TOTAL BLOCKS:" + Statistics.getInstance().getBlocks() + "\r\n";
+		} else if (request.startsWith("GET OPEN CONNECTIONS")) {
+			return "TOTAL BLOCKS:" + Statistics.getInstance().getOpenConnections() + "\r\n";
+		} else if (request.startsWith("GET CLIENT BYTES TRANSMITED")) {
+			return "TOTAL BLOCKS:" + Statistics.getInstance().getProxyClientBytes() + "\r\n";
+		} else if (request.startsWith("GET SERVERS BYTES TRANSMITED")) {
+			return "TOTAL BLOCKS:" + Statistics.getInstance().getProxyServerBytes() + "\r\n";
+		} else if (request.startsWith("GET TRANSFORMATIONS")) {
+			return "TOTAL BLOCKS:" + Statistics.getInstance().getTransformations() + "\r\n";
+		} else if (request.startsWith("GET TOTAL BYTES TRANSMITED")) {
+			return "TOTAL BYTES TRANSMITED:" + String.valueOf(Statistics.getInstance().getProxyClientBytes() + Statistics.getInstance().getProxyServerBytes()) + "\r\n";
 		} else if (request.equals("EXIT")) {
 			return "BYE!";
 		} else {
