@@ -70,6 +70,12 @@ public abstract class HttpMsg {
 		return values.get(0);
 	}
 
+	public void removeHeader(final String header) {
+		if (this.headers.containsKey(header)) {
+			this.headers.remove(header);
+		}
+	}
+
 	public List<String> getHeaders(final String key) {
 		return this.headers.get(key);
 	}

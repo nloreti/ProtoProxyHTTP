@@ -70,7 +70,7 @@ public class HttpRequestImpl extends HttpMsg {
 
 		this.method = ImplementedMethod.getMethod(line[0]);
 
-		if (this.method == null) {
+		if (!this.isSupportedMethod()) {
 			System.out.println("METHOD INVALIDO");
 		}
 
@@ -212,6 +212,10 @@ public class HttpRequestImpl extends HttpMsg {
 	void writeBodyStream(final OutputStream out) throws ServerException,
 			NumberFormatException {
 
+		if ("HEAD".equals(this.method)) {
+			return;
+		}
+
 		if (this.getHeader("Content-Length") != null) {
 			int contentLength = Integer.valueOf(this
 					.getHeader("Content-Length"));
@@ -247,6 +251,12 @@ public class HttpRequestImpl extends HttpMsg {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	private boolean isSupportedMethod() {
+		return this.method.equals(ImplementedMethod.HEAD)
+				|| this.method.equals(ImplementedMethod.GET)
+				|| this.method.equals(ImplementedMethod.POST);
 	}
 
 	public String getMediaType() {
