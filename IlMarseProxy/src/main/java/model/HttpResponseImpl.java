@@ -192,13 +192,11 @@ public class HttpResponseImpl extends HttpMsg {
 	}
 
 	public int getContentLength() {
-		// TODO Auto-generated method stub
-		return 0;
+		return Integer.valueOf(this.getHeader("Content-Lenght"));
 	}
 
-	public boolean containsType(String string) {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean containsType(final String string) {
+		return this.getHeader("Content-Type").matches(string);
 	}
 
 }

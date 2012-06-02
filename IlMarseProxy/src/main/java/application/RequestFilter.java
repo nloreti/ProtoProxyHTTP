@@ -1,7 +1,14 @@
 package application;
 
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.imageio.ImageIO;
 
 import model.HttpRequestImpl;
 import model.HttpResponseImpl;
@@ -25,154 +32,224 @@ public class RequestFilter {
 	}
 
 	public RequestFilter() {
-		images = true;
-		leet = false;
-		access = true;
-		maxSize = 0;
-		ips = new HashSet<String>();
-		uris = new HashSet<String>();
-		mediaTypes = new HashSet<String>();
+		this.images = true;
+		this.leet = false;
+		this.access = true;
+		this.maxSize = 0;
+		this.ips = new HashSet<String>();
+		this.uris = new HashSet<String>();
+		this.mediaTypes = new HashSet<String>();
 	}
 
-	public HttpResponseImpl filter(HttpRequestImpl request) {
+	public HttpResponseImpl filter(final HttpRequestImpl request) {
 		return null;
 	}
 
 	public boolean images() {
-		return images;
+		return this.images;
 	}
 
-	public boolean setMaxSize(int ms) {
+	public boolean setMaxSize(final int ms) {
 		this.maxSize = ms;
-		return hasMaxSize();
+		return this.hasMaxSize();
 	}
 
 	public boolean hasMaxSize() {
-		return maxSize != 0;
+		return this.maxSize != 0;
 	}
 
-	public boolean blockMediaType(String mediaType) {
-		return mediaTypes.add(mediaType);
+	public boolean blockMediaType(final String mediaType) {
+		return this.mediaTypes.add(mediaType);
 	}
 
-	public boolean unlockMediaType(String mediaType) {
-		return mediaTypes.remove(mediaType);
+	public boolean unlockMediaType(final String mediaType) {
+		return this.mediaTypes.remove(mediaType);
 	}
 
-	public boolean unlockUri(String uri) {
-		return uris.remove(uri);
+	public boolean unlockUri(final String uri) {
+		return this.uris.remove(uri);
 	}
 
-	public boolean blockUri(String uri) {
-		return uris.add(uri);
+	public boolean blockUri(final String uri) {
+		return this.uris.add(uri);
 	}
 
 	public boolean access() {
-		return access;
+		return this.access;
 	}
 
 	public void accessOff() {
-		access = false;
+		this.access = false;
 	}
 
 	public void accessOn() {
-		access = true;
+		this.access = true;
 	}
 
 	public void leetOn() {
-		leet = true;
+		this.leet = true;
 	}
 
 	public void leetOff() {
-		leet = false;
+		this.leet = false;
 	}
 
 	public boolean leet() {
-		return leet;
+		return this.leet;
 	}
 
 	public void imagesOff() {
-		images = false;
+		this.images = false;
 	}
 
 	public void imagesOn() {
-		images = true;
+		this.images = true;
 	}
 
-	public boolean blockIP(String ip) {
-		return ips.add(ip);
+	public boolean blockIP(final String ip) {
+		return this.ips.add(ip);
 	}
 
-	public boolean unlockIP(String ip) {
-		return ips.remove(ip);
+	public boolean unlockIP(final String ip) {
+		return this.ips.remove(ip);
 	}
 
-	public HttpResponseImpl doFilter(HttpRequestImpl request,
-			HttpResponseImpl response) {
-		if (!access)
-			return generateBlockedResponse();
-		if (ips.contains(request.getDestinationIp()))
-			return generateBlockedResponseByIp(request.getDestinationIp());
-		if (images) {
-			if (response.containsType("image")) {// TODO hacer bien esto xq no tengo idea!
-				//TODO dar vuelta la imagen
-				//BufferedImage image = ImageIO.read(ImageIO.createImageInputStream(response.getInputStream()));
+	public HttpResponseImpl doFilter(final HttpRequestImpl request,
+			final HttpResponseImpl response) {
+		if (!this.access) {
+			return this.generateBlockedResponse();
+		}
+		if (this.ips.contains(request.getDestinationIp())) {
+			return this.generateBlockedResponseByIp(request.getDestinationIp());
+		}
+		if (this.images) {
+			if (response.containsType("image/.*")) {
+				this.rotateImage(response);
 			}
 		}
-		if (leet) {
-			if (response.containsType("plain text")) {// TODO hacer bien esto xq no tengo idea!
+		if (this.leet) {
+			if (response.containsType("text/plain")) {
 				String body = new String(response.getBody());
 				body = body.replace('a', '4').replace('e', '3')
 						.replace('i', '1').replace('o', '0');
 				response.setBody(body.getBytes());
 			}
 		}
-		if (uris.contains(request.getRequestURI())) {
-			return generateBlockedResponseByUri(request.getRequestURI()
+		if (this.uris.contains(request.getRequestURI())) {
+			return this.generateBlockedResponseByUri(request.getRequestURI()
 					.toString());
 		}
-		if (response.getContentLength() > maxSize) {
-			return generateBlockedResponse(maxSize);
+		if (response.getContentLength() > this.maxSize) {
+			return this.generateBlockedResponse(this.maxSize);
 		}
-		if (mediaTypes.contains(request.getMediaType())) {
-			return generateBlockedResponseByMediaType(request.getMediaType());
+		if (this.mediaTypes.contains(request.getMediaType())) {
+			return this.generateBlockedResponseByMediaType(request
+					.getMediaType());
 		}
 		return response;
 	}
 
-	private HttpResponseImpl generateBlockedResponseByIp(String destinationIp) {
-		return generateBlockedResponse("This ip has been blocked by the proxy administrator. IP: "
-				+ destinationIp);
+	private void rotateImage(final HttpResponseImpl response) {
+		try {
+			final byte[] bodyImageBytes = response.getBody();
+			final String format = response.getHeader("Content-Type").split("/")[1];
+			final byte[] imageBytes = this.rotateBytes(bodyImageBytes, format);
+			response.replaceHeader("Content-Length",
+					String.valueOf(imageBytes.length));
+			response.removeHeader("Content-Encoding");
+			response.setBody(imageBytes);
+		} catch (final Exception e) {
+			return;
+		}
+
 	}
 
-	private HttpResponseImpl generateBlockedResponseByMediaType(String mediaType) {
-		return generateBlockedResponse("This media type has been blocked by the proxy administrator. Media type: "
-				+ mediaType);
+	private byte[] rotateBytes(final byte[] rawImageBytes, final String format) {
+		int width;
+		int height;
+		final double radians = Math.PI;// 180 grados
+		BufferedImage newImage = null;
+		BufferedImage oldImage = null;
+		final ByteArrayOutputStream resp;
+
+		try {
+			oldImage = ImageIO.read(new ByteArrayInputStream(rawImageBytes));
+
+		} catch (final IOException e) {
+			e.printStackTrace();
+		}
+
+		width = oldImage.getWidth();
+		height = oldImage.getHeight();
+
+		try {
+			newImage = new BufferedImage(width, height, oldImage.getType());
+		} catch (final IllegalArgumentException e) {
+			e.printStackTrace();
+		}
+		final Graphics2D graph = newImage.createGraphics();
+		graph.rotate(radians, width / 2, height / 2);
+		graph.drawImage(oldImage, null, width, height);
+
+		resp = new ByteArrayOutputStream(width * height);
+		try {
+			ImageIO.write(newImage, format, resp);
+		} catch (final IOException e) {
+			System.out.println("error al guardar la imagen");
+			e.printStackTrace();
+		}
+
+		try {
+			resp.flush();
+		} catch (final IOException e) {
+			System.out.println("flush error");
+			e.printStackTrace();
+		}
+
+		return resp.toByteArray();
+	}
+
+	private HttpResponseImpl generateBlockedResponseByIp(
+			final String destinationIp) {
+		return this
+				.generateBlockedResponse("This ip has been blocked by the proxy administrator. IP: "
+						+ destinationIp);
+	}
+
+	private HttpResponseImpl generateBlockedResponseByMediaType(
+			final String mediaType) {
+		return this
+				.generateBlockedResponse("This media type has been blocked by the proxy administrator. Media type: "
+						+ mediaType);
 	}
 
 	private HttpResponseImpl generateBlockedResponse() {
-		return generateBlockedResponse("The access has been completely blocked by the proxy administrator.");
+		return this
+				.generateBlockedResponse("The access has been completely blocked by the proxy administrator.");
 	}
 
-	private HttpResponseImpl generateBlockedResponseByUri(String requestURI) {
-		return generateBlockedResponse("This URI has been blocked by the proxy administrator. URI: "
-				+ requestURI);
+	private HttpResponseImpl generateBlockedResponseByUri(
+			final String requestURI) {
+		return this
+				.generateBlockedResponse("This URI has been blocked by the proxy administrator. URI: "
+						+ requestURI);
 	}
 
-	private HttpResponseImpl generateBlockedResponse(int size) {
-		return generateBlockedResponse("The resource you are trying to reach is too big. Size: "
-				+ size);
+	private HttpResponseImpl generateBlockedResponse(final int size) {
+		return this
+				.generateBlockedResponse("The resource you are trying to reach is too big. Size: "
+						+ size);
 	}
 
-	private HttpResponseImpl generateBlockedResponse(String string) {
+	private HttpResponseImpl generateBlockedResponse(final String string) {
 		try {
-			HttpResponseImpl response = new HttpResponseImpl(null);
+			final HttpResponseImpl response = new HttpResponseImpl(null);
 			response.addHeader("MIME TYPE", "HTML");// TODO hacer bien esto xq
 													// no tengo idea
-			String body = "<body>" + string + "</body>";
+			final String body = "<body>" + string + "</body>";
 			response.setBody(body.getBytes());
 			return response;
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			return null;
 		}
 	}
