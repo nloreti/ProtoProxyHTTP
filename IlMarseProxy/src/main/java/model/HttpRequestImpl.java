@@ -208,4 +208,7 @@ public class HttpRequestImpl extends HttpMsg {
 		return null;
 	}
 
+	public String getLogString(){
+		return "to: " + getRequestURI() + "\nheaders: " + getHeaders().toString();
+	}
 }
