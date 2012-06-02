@@ -14,6 +14,9 @@ import connection.EndPointConnectionHandler;
 import exceptions.EncodingException;
 import exceptions.ResponseException;
 
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Logger;
+
 public class ResolverThread implements Runnable {
 
 	// Cliente
@@ -21,6 +24,7 @@ public class ResolverThread implements Runnable {
 	Connection server;
 	EndPointConnectionHandler hostHandler;
 	boolean proxyKeepAlive = true;
+	static final Logger logger = Logger.getLogger(ResolverThread.class);
 
 	// Configuracion del proxy
 	private ProxyConfiguration configuration = DinamicProxyConfiguration
@@ -36,6 +40,7 @@ public class ResolverThread implements Runnable {
 	public void run() {
 		HttpRequestImpl request = null;
 		HttpResponseImpl response = null;
+		BasicConfigurator.configure();
 
 		// request = this.getRequest();
 		// response = this.getResponse(request);
@@ -53,6 +58,8 @@ public class ResolverThread implements Runnable {
 			}
 
 			response = rf.doFilter( request, response );
+			logger.trace("Request: " + request);
+			logger.trace("Response: " + response.getStatusCode());
 			// Retornamos la respuesta.
 			try {
 				final boolean respKeepAlive = this.keepAlive(response);
