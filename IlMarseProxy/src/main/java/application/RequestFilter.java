@@ -32,7 +32,7 @@ public class RequestFilter {
 	}
 
 	public RequestFilter() {
-		this.images = true;
+		this.images = false;
 		this.leet = false;
 		this.access = true;
 		this.maxSize = 0;
@@ -117,18 +117,20 @@ public class RequestFilter {
 	public HttpResponseImpl doFilter(final HttpRequestImpl request,
 			final HttpResponseImpl response) {
 		if (!this.access) {
-			return this.generateBlockedResponse();
+			return this.generateBlockedResponse(response);
 		}
 		if (this.ips.contains(request.getDestinationIp())) {
-			return this.generateBlockedResponseByIp(request.getDestinationIp());
+			return this.generateBlockedResponseByIp(request.getDestinationIp(),
+					response);
 		}
 		if (this.images) {
 			if (response.containsType("image/.*")) {
+				System.out.println("ENTRA");
 				this.rotateImage(response);
 			}
 		}
 		if (this.leet) {
-			if (response.containsType("text/plain")) {
+			if (response.containsType("text/plain.*")) {
 				String body = new String(response.getBody());
 				body = body.replace('a', '4').replace('e', '3')
 						.replace('i', '1').replace('o', '0');
@@ -137,14 +139,16 @@ public class RequestFilter {
 		}
 		if (this.uris.contains(request.getRequestURI())) {
 			return this.generateBlockedResponseByUri(request.getRequestURI()
-					.toString());
+					.toString(), response);
 		}
-		if (response.getContentLength() > this.maxSize) {
-			return this.generateBlockedResponse(this.maxSize);
-		}
+		// if (response.getContentLength() != null) {
+		// if (Integer.valueOf(response.getContentLength()) > this.maxSize) {
+		// return this.generateBlockedResponse(this.maxSize, response);
+		// }
+		// }
 		if (this.mediaTypes.contains(request.getMediaType())) {
-			return this.generateBlockedResponseByMediaType(request
-					.getMediaType());
+			return this.generateBlockedResponseByMediaType(
+					request.getMediaType(), response);
 		}
 		return response;
 	}
@@ -159,7 +163,7 @@ public class RequestFilter {
 			response.removeHeader("Content-Encoding");
 			response.setBody(imageBytes);
 		} catch (final Exception e) {
-			return;
+			e.printStackTrace();
 		}
 
 	}
@@ -189,7 +193,7 @@ public class RequestFilter {
 		}
 		final Graphics2D graph = newImage.createGraphics();
 		graph.rotate(radians, width / 2, height / 2);
-		graph.drawImage(oldImage, null, width, height);
+		graph.drawImage(oldImage, null, 0, 0);
 
 		resp = new ByteArrayOutputStream(width * height);
 		try {
@@ -210,47 +214,63 @@ public class RequestFilter {
 	}
 
 	private HttpResponseImpl generateBlockedResponseByIp(
-			final String destinationIp) {
-		return this
-				.generateBlockedResponse("This ip has been blocked by the proxy administrator. IP: "
-						+ destinationIp);
+			final String destinationIp, final HttpResponseImpl response) {
+		return this.generateBlockedResponse(
+				"This ip has been blocked by the proxy administrator. IP: "
+						+ destinationIp, response);
 	}
 
 	private HttpResponseImpl generateBlockedResponseByMediaType(
-			final String mediaType) {
-		return this
-				.generateBlockedResponse("This media type has been blocked by the proxy administrator. Media type: "
-						+ mediaType);
+			final String mediaType, final HttpResponseImpl response) {
+		return this.generateBlockedResponse(
+				"This media type has been blocked by the proxy administrator. Media type: "
+						+ mediaType, response);
 	}
 
-	private HttpResponseImpl generateBlockedResponse() {
+	private HttpResponseImpl generateBlockedResponse(
+			final HttpResponseImpl response) {
 		return this
-				.generateBlockedResponse("The access has been completely blocked by the proxy administrator.");
+				.generateBlockedResponse(
+						"The access has been completely blocked by the proxy administrator.",
+						response);
 	}
 
 	private HttpResponseImpl generateBlockedResponseByUri(
-			final String requestURI) {
-		return this
-				.generateBlockedResponse("This URI has been blocked by the proxy administrator. URI: "
-						+ requestURI);
+			final String requestURI, final HttpResponseImpl response) {
+		return this.generateBlockedResponse(
+				"This URI has been blocked by the proxy administrator. URI: "
+						+ requestURI, response);
 	}
 
-	private HttpResponseImpl generateBlockedResponse(final int size) {
-		return this
-				.generateBlockedResponse("The resource you are trying to reach is too big. Size: "
-						+ size);
+	private HttpResponseImpl generateBlockedResponse(final int size,
+			final HttpResponseImpl response) {
+		return this.generateBlockedResponse(
+				"The resource you are trying to reach is too big. Size: "
+						+ size, response);
 	}
 
-	private HttpResponseImpl generateBlockedResponse(final String string) {
+	private HttpResponseImpl generateBlockedResponse(final String string,
+			final HttpResponseImpl response) {
 		try {
-			final HttpResponseImpl response = new HttpResponseImpl(null);
-			response.addHeader("MIME TYPE", "HTML");// TODO hacer bien esto xq
-													// no tengo idea
-			final String body = "<body>" + string + "</body>";
+			final String body = "<title>Feedback Page</title><html><body><h1>"
+					+ string + "<h1></body></html>";
+
+			response.appendHeader("Content-Length",
+					String.valueOf(body.length()));
+			response.removeHeader("Content-Encoding");
 			response.setBody(body.getBytes());
-			return response;
+
+			// if (response.getHeader("Content-Type") != null) {
+			// response.removeHeader("Content-Type");
+			// }
+			// response.addHeader("Content-Type", "text/html");
+			// System.out.println(new String(response.getBody(), "UTF-8"));
+			System.out.println("ENTRE");
+			// response.setBody(body.getBytes());
 		} catch (final Exception e) {
-			return null;
+			e.printStackTrace();
+
 		}
+		return response;
 	}
 }

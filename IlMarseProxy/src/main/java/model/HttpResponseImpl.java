@@ -16,8 +16,7 @@ public class HttpResponseImpl extends HttpMsg {
 	private int statusCode;
 	private String reasonPhrase;
 	private String pVersion;
-	private byte[] entityBody;
-	private boolean completed = false;
+	private boolean isBodyCached = false;
 	// private int limit;
 	private boolean contentByClosedConnection = false;
 
@@ -85,13 +84,25 @@ public class HttpResponseImpl extends HttpMsg {
 	// this.limit = limit;
 	// }
 
-	public byte[] getEntityBody() throws ServerException {
-		if (!this.completed) {
+	@Override
+	public byte[] getBody() {
+		if (!this.isBodyCached) {
 			final ByteArrayOutputStream out = new ByteArrayOutputStream();
-			this.writeBodyStream(out);
-			this.entityBody = out.toByteArray();
+			try {
+				this.writeBodyStream(out);
+			} catch (final ServerException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			super.setBody(out.toByteArray());
 		}
-		return this.entityBody;
+		return super.getBody();
+	}
+
+	@Override
+	public void setBody(final byte[] body) {
+		this.isBodyCached = true;
+		super.setBody(body);
 	}
 
 	void write(final OutputStream out, final int b) {
@@ -135,7 +146,11 @@ public class HttpResponseImpl extends HttpMsg {
 			}
 			bytes = "\r\n".getBytes();
 			out.write(bytes);
-			this.writeBodyStream(out);
+			if (!this.isBodyCached) {
+				this.writeBodyStream(out);
+			} else {
+				out.write(this.getBody());
+			}
 
 		} catch (final IOException e1) {
 			// TODO Auto-generated catch block
@@ -145,6 +160,8 @@ public class HttpResponseImpl extends HttpMsg {
 
 	@Override
 	void writeBodyStream(final OutputStream out) throws ServerException {
+
+		// final ByteArrayOutputStream outArray = new ByteArrayOutputStream();
 
 		try {
 			if (this.getHeader("Content-Length") != null) {
@@ -156,17 +173,23 @@ public class HttpResponseImpl extends HttpMsg {
 						System.out.println("Se cerro la conexion del cliente");
 					}
 					this.write(out, c);
+					// outArray.write(c);
 				}
 			} else if (this.contentByClosedConnection) {
 				int c;
 				while ((c = this.read()) != -1) {
 					this.write(out, c);
+					// outArray.write(c);
 				}
 			} else if ("chunked".equals(this.getHeader("Transfer-Encoding"))) {
 				System.out.println("CAYO EN CHUNKED!");
 			}
+			// if (!this.completed) {
+			// this.setBody(outArray.toByteArray());
+			// }
+			this.isBodyCached = true;
 		} catch (final Exception e) {
-			this.writeBodyStream(out);
+			e.printStackTrace();
 		}
 
 	}
@@ -191,12 +214,17 @@ public class HttpResponseImpl extends HttpMsg {
 		return b.toString();
 	}
 
-	public int getContentLength() {
-		return Integer.valueOf(this.getHeader("Content-Lenght"));
+	public String getContentLength() {
+		return this.getHeader("Content-Length");
 	}
 
 	public boolean containsType(final String string) {
-		return this.getHeader("Content-Type").matches(string);
+
+		if (this.getHeader("Content-Type") != null) {
+			return this.getHeader("Content-Type").matches(string);
+		}
+
+		return false;
 	}
 
 }

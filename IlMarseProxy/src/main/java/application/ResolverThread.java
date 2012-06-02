@@ -40,7 +40,7 @@ public class ResolverThread implements Runnable {
 		// request = this.getRequest();
 		// response = this.getResponse(request);
 		// this.sendResponse(response);
-		RequestFilter rf = RequestFilter.getInstance();
+		// final RequestFilter rf = RequestFilter.getInstance();
 		do {
 			// Obtenemos Request y Response.
 			try {
@@ -52,7 +52,6 @@ public class ResolverThread implements Runnable {
 				e.printStackTrace();
 			}
 
-			response = rf.doFilter( request, response );
 			// Retornamos la respuesta.
 			try {
 				final boolean respKeepAlive = this.keepAlive(response);
@@ -145,7 +144,8 @@ public class ResolverThread implements Runnable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
+		response = RequestFilter.getInstance().doFilter(request, response);
+		// response = rf.doFilter(request, response);
 		// System.out.println(response);
 		return response;
 	}
