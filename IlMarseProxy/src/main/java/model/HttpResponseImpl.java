@@ -227,4 +227,7 @@ public class HttpResponseImpl extends HttpMsg {
 		return false;
 	}
 
+	public String getLogString(){
+		return String.valueOf(getStatusCode());
+	}
 }

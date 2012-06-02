@@ -119,10 +119,10 @@ public class RequestFilter {
 		if (!this.access) {
 			return this.generateBlockedResponse(response);
 		}
-		if (this.ips.contains(request.getDestinationIp())) {
-			return this.generateBlockedResponseByIp(request.getDestinationIp(),
-					response);
-		}
+//		if (this.ips.contains(request.getDestinationIp())) {
+//			return this.generateBlockedResponseByIp(request.getDestinationIp(),
+//					response);
+//		}
 		if (this.images) {
 			if (response.containsType("image/.*")) {
 				System.out.println("ENTRA");

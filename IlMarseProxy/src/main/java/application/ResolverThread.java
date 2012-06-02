@@ -58,8 +58,8 @@ public class ResolverThread implements Runnable {
 				e.printStackTrace();
 			}
 
-			logger.trace("Request: " + request);
-			logger.trace("Response: " + response.getStatusCode());
+			logger.warn("Request: " + request.getLogString());
+			logger.warn("Response: " + response.getLogString());
 			// Retornamos la respuesta.
 			try {
 				final boolean respKeepAlive = this.keepAlive(response);
