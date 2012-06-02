@@ -197,6 +197,7 @@ public class HttpResponseImpl extends HttpMsg {
 	@Override
 	String getHost() {
 		return this.getHeader("Host");
+
 	}
 
 	@Override

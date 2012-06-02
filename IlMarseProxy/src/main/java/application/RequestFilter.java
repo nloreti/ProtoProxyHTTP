@@ -5,7 +5,12 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
@@ -19,8 +24,8 @@ public class RequestFilter {
 	private boolean images;
 	private boolean leet;
 	private boolean access;
-	private Set<String> ips;
-	private Set<String> uris;
+	private List<String> ips;
+	private List<URI> uris;
 	private Set<String> mediaTypes;
 	private int maxSize;
 
@@ -35,9 +40,9 @@ public class RequestFilter {
 		this.images = false;
 		this.leet = false;
 		this.access = true;
-		this.maxSize = 0;
-		this.ips = new HashSet<String>();
-		this.uris = new HashSet<String>();
+		this.maxSize = Integer.MAX_VALUE;
+		this.ips = new ArrayList<String>();
+		this.uris = new ArrayList<URI>();
 		this.mediaTypes = new HashSet<String>();
 	}
 
@@ -66,11 +71,11 @@ public class RequestFilter {
 		return this.mediaTypes.remove(mediaType);
 	}
 
-	public boolean unlockUri(final String uri) {
+	public boolean unlockUri(final URI uri) {
 		return this.uris.remove(uri);
 	}
 
-	public boolean blockUri(final String uri) {
+	public boolean blockUri(final URI uri) {
 		return this.uris.add(uri);
 	}
 
@@ -116,41 +121,80 @@ public class RequestFilter {
 
 	public HttpResponseImpl doFilter(final HttpRequestImpl request,
 			final HttpResponseImpl response) {
-		if (!this.access) {
-			return this.generateBlockedResponse(response);
-		}
-		if (this.ips.contains(request.getDestinationIp())) {
-			return this.generateBlockedResponseByIp(request.getDestinationIp(),
-					response);
-		}
-		if (this.images) {
-			if (response.containsType("image/.*")) {
-				System.out.println("ENTRA");
-				this.rotateImage(response);
+
+		try {
+			if (!this.access) {
+				return this.generateBlockedResponse(response);
 			}
-		}
-		if (this.leet) {
-			if (response.containsType("text/plain.*")) {
-				String body = new String(response.getBody());
-				body = body.replace('a', '4').replace('e', '3')
-						.replace('i', '1').replace('o', '0');
-				response.setBody(body.getBytes());
+			if (this.destinationIPIsBlocked(request)) {
+				return this.generateBlockedResponseByIp(
+						InetAddress.getByName(request.getHost())
+								.getHostAddress(), response);
 			}
-		}
-		if (this.uris.contains(request.getRequestURI())) {
-			return this.generateBlockedResponseByUri(request.getRequestURI()
-					.toString(), response);
-		}
-		// if (response.getContentLength() != null) {
-		// if (Integer.valueOf(response.getContentLength()) > this.maxSize) {
-		// return this.generateBlockedResponse(this.maxSize, response);
-		// }
-		// }
-		if (this.mediaTypes.contains(request.getMediaType())) {
-			return this.generateBlockedResponseByMediaType(
-					request.getMediaType(), response);
+			if (this.images) {
+				if (response.containsType("image/.*")) {
+					System.out.println("ENTRA");
+					this.rotateImage(response);
+				}
+			}
+			if (this.leet) {
+				if (response.containsType("text/plain.*")) {
+					String body = new String(response.getBody());
+					body = body.replace('a', '4').replace('e', '3')
+							.replace('i', '1').replace('o', '0');
+					response.setBody(body.getBytes());
+				}
+			}
+			if (this.urisBlocked(request)) {
+				return this.generateBlockedResponseByUri(request
+						.getRequestURI().toString(), response);
+			}
+			if (response.getContentLength() != null) {
+				if (Integer.valueOf(response.getContentLength()) > this.maxSize) {
+					return this.generateBlockedResponse(this.maxSize, response);
+				}
+			}
+			if (this.mediaTypes.contains(request.getMediaType())) {
+				return this.generateBlockedResponseByMediaType(
+						request.getMediaType(), response);
+			}
+		} catch (final UnknownHostException e) {
+			e.printStackTrace();
 		}
 		return response;
+	}
+
+	private boolean urisBlocked(final HttpRequestImpl request) {
+		int i;
+		for (i = 0; i < this.uris.size(); i++) {
+			if (request.getRequestURI().equals(this.uris.get(i))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean destinationIPIsBlocked(final HttpRequestImpl request) {
+
+		int i = 0;
+		InetAddress requestIP;
+		try {
+			requestIP = InetAddress.getByName(request.getHost());
+
+			for (i = 0; i < this.ips.size(); i++) {
+				final InetAddress listIP = InetAddress.getByName(this.ips
+						.get(i));
+				if ((listIP.getHostAddress())
+						.equals(requestIP.getHostAddress())) {
+					return true;
+				}
+			}
+		} catch (final UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return false;
 	}
 
 	private void rotateImage(final HttpResponseImpl response) {

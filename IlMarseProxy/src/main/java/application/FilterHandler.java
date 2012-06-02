@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class FilterHandler implements ConnectionHandler {
 
@@ -79,7 +81,7 @@ public class FilterHandler implements ConnectionHandler {
 			return "IMAGES WILL NOW ROTATE";
 		} else if (request.startsWith("BLOCK IP ")) {
 			final String ip = request.substring(9);
-			if (!ip.matches("%d.%d.%d")) {
+			if (ip.matches("%d.%d.%d")) {
 				return "INVALID IP";
 			}
 			if (!rf.blockIP(ip)) {
@@ -101,8 +103,13 @@ public class FilterHandler implements ConnectionHandler {
 			if (false) {
 				return uri + " IS NOT A VALID URI";
 			}
-			if (!rf.blockUri(uri)) {
-				return uri + " IS ALREADY BLOCKED";
+			try {
+				if (!rf.blockUri(new URI(uri))) {
+					return uri + " IS ALREADY BLOCKED";
+				}
+			} catch (final URISyntaxException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 			return uri + " HAS BEEN BLOCKED";
 		} else if (request.startsWith("UNLOCK URI ")) {
@@ -111,8 +118,13 @@ public class FilterHandler implements ConnectionHandler {
 			if (false) {
 				return uri + "IS NOT A VALID URI";
 			}
-			if (!rf.unlockUri(uri)) {
-				return uri + "NOT BLOCKED";
+			try {
+				if (!rf.unlockUri(new URI(uri))) {
+					return uri + "NOT BLOCKED";
+				}
+			} catch (final URISyntaxException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 			return uri + "UNLOCKED";
 		} else if (request.startsWith("BLOCK MEDIATYPE ")) {
@@ -139,18 +151,29 @@ public class FilterHandler implements ConnectionHandler {
 				return "MAXSIZE SET TO " + maxSize;
 			}
 			return "MAXSIZE IS NOW OFF";
-		} else if (request.startsWith("GET BLOCKS")) { //A mi gusto tenemos que hacer un solo servidor que provea todo, por eso lo puse aca.
+		} else if (request.startsWith("GET BLOCKS")) { // A mi gusto tenemos que
+														// hacer un solo
+														// servidor que provea
+														// todo, por eso lo puse
+														// aca.
 			return "TOTAL BLOCKS:" + Statistics.getInstance().getBlocks();
 		} else if (request.startsWith("GET OPEN CONNECTIONS")) {
-			return "TOTAL BLOCKS:" + Statistics.getInstance().getOpenConnections();
+			return "TOTAL BLOCKS:"
+					+ Statistics.getInstance().getOpenConnections();
 		} else if (request.startsWith("GET CLIENT BYTES TRANSMITED")) {
-			return "TOTAL BLOCKS:" + Statistics.getInstance().getProxyClientBytes();
+			return "TOTAL BLOCKS:"
+					+ Statistics.getInstance().getProxyClientBytes();
 		} else if (request.startsWith("GET SERVERS BYTES TRANSMITED")) {
-			return "TOTAL BLOCKS:" + Statistics.getInstance().getProxyServerBytes();
+			return "TOTAL BLOCKS:"
+					+ Statistics.getInstance().getProxyServerBytes();
 		} else if (request.startsWith("GET TRANSFORMATIONS")) {
-			return "TOTAL BLOCKS:" + Statistics.getInstance().getTransformations();
+			return "TOTAL BLOCKS:"
+					+ Statistics.getInstance().getTransformations();
 		} else if (request.startsWith("GET TOTAL BYTES TRANSMITED")) {
-			return "TOTAL BYTES TRANSMITED:" + String.valueOf(Statistics.getInstance().getProxyClientBytes() + Statistics.getInstance().getProxyServerBytes());
+			return "TOTAL BYTES TRANSMITED:"
+					+ String.valueOf(Statistics.getInstance()
+							.getProxyClientBytes()
+							+ Statistics.getInstance().getProxyServerBytes());
 		} else if (request.equals("EXIT")) {
 			return "BYE!";
 		} else {
