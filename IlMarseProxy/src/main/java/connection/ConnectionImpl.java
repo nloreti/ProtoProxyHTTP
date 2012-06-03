@@ -12,7 +12,9 @@ import java.rmi.ServerException;
 import model.HttpRequestImpl;
 import model.HttpResponseImpl;
 import application.DinamicProxyConfiguration;
+import exceptions.ConnectionException;
 import exceptions.EncodingException;
+import exceptions.MessageException;
 import exceptions.ResponseException;
 
 public class ConnectionImpl implements Connection {
@@ -95,10 +97,13 @@ public class ConnectionImpl implements Connection {
 		OutputStream out;
 		try {
 			out = this.socket.getOutputStream();
-			response.writeStream(out);
 		} catch (final IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new ConnectionException("Fallo el send Response");
+		}
+		try {
+			response.writeStream(out);
+		} catch (final MessageException e) {
+			throw new ResponseException();
 		}
 
 	}

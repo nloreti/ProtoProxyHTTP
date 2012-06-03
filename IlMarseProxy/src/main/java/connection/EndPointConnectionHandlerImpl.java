@@ -34,7 +34,7 @@ public class EndPointConnectionHandlerImpl implements EndPointConnectionHandler 
 		} else {
 			connection = new ConnectionImpl(this.sockAddress);
 		}
-
+		System.out.println("Connexion: " + connection);
 		return connection;
 	}
 

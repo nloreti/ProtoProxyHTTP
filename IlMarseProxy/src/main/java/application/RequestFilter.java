@@ -9,9 +9,7 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.imageio.ImageIO;
 
@@ -26,7 +24,7 @@ public class RequestFilter {
 	private boolean access;
 	private List<String> ips;
 	private List<URI> uris;
-	private Set<String> mediaTypes;
+	private List<String> mediaTypes;
 	private int maxSize;
 
 	public static RequestFilter getInstance() {
@@ -43,7 +41,7 @@ public class RequestFilter {
 		this.maxSize = Integer.MAX_VALUE;
 		this.ips = new ArrayList<String>();
 		this.uris = new ArrayList<URI>();
-		this.mediaTypes = new HashSet<String>();
+		this.mediaTypes = new ArrayList<String>();
 	}
 
 	public HttpResponseImpl filter(final HttpRequestImpl request) {
@@ -154,14 +152,29 @@ public class RequestFilter {
 					return this.generateBlockedResponse(this.maxSize, response);
 				}
 			}
-			if (this.mediaTypes.contains(request.getMediaType())) {
-				return this.generateBlockedResponseByMediaType(
-						request.getMediaType(), response);
+
+			if (this.isMediaTypeBlockable(response)) {
+				return this.generateBlockedResponseByMediaType(response);
 			}
 		} catch (final UnknownHostException e) {
 			e.printStackTrace();
 		}
 		return response;
+	}
+
+	private boolean isMediaTypeBlockable(final HttpResponseImpl response) {
+		int i;
+		for (i = 0; i < this.mediaTypes.size(); i++) {
+			if (response.getHeader("Content-Type") != null) {
+				System.out.println("Lista: " + this.mediaTypes.get(i)
+						+ "Response: " + response.getHeader("Content-Type"));
+				if (response.getHeader("Content-Type").matches(
+						this.mediaTypes.get(i))) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	private boolean urisBlocked(final HttpRequestImpl request) {
@@ -265,10 +278,13 @@ public class RequestFilter {
 	}
 
 	private HttpResponseImpl generateBlockedResponseByMediaType(
-			final String mediaType, final HttpResponseImpl response) {
-		return this.generateBlockedResponse(
-				"This media type has been blocked by the proxy administrator. Media type: "
-						+ mediaType, response);
+			final HttpResponseImpl response) {
+
+		response.setStatusCode(406);
+		response.replaceHeader("Content-Length", "0");
+		final String body = "";
+		response.setBody(body.getBytes());
+		return response;
 	}
 
 	private HttpResponseImpl generateBlockedResponse(

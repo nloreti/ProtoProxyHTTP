@@ -15,8 +15,12 @@ import connection.CollectionConnectionHandler;
 import connection.CollectionConnectionHandlerImpl;
 import connection.Connection;
 import connection.EndPointConnectionHandler;
+import exceptions.ClientException;
+import exceptions.CloseException;
+import exceptions.ConnectionException;
 import exceptions.EncodingException;
 import exceptions.ResponseException;
+import exceptions.ServerTimeOutException;
 
 public class ResolverThread implements Runnable {
 
@@ -43,29 +47,26 @@ public class ResolverThread implements Runnable {
 		HttpResponseImpl response = null;
 		BasicConfigurator.configure();
 
-		// request = this.getRequest();
-		// response = this.getResponse(request);
-		// this.sendResponse(response);
 		// final RequestFilter rf = RequestFilter.getInstance();
 		do {
 			// Obtenemos Request y Response.
 			try {
 				request = this.getRequest();
 				response = this.getResponse(request);
-			} catch (final Exception e) {
-				System.out.println("Fallo el R & Response");
+			} catch (final CloseException e) {
+				// System.out.println("Fallo el R & Response");
 				this.proxyKeepAlive = false;
-				e.printStackTrace();
+				this.close();
+				return;
 			}
 
-			logger.warn("Request: " + request.getLogString());
-			logger.warn("Response: " + response.getLogString());
+			// logger.warn("Request: " + request.getLogString());
+			// logger.warn("Response: " + response.getLogString());
 			// Retornamos la respuesta.
 			try {
 				final boolean respKeepAlive = this.keepAlive(response);
 				this.setHeaders(response, request);
 				this.sendResponse(response);
-				this.server = null;
 				if (this.hostHandler != null) {
 					if (respKeepAlive) {
 						this.hostHandler.free(this.server);
@@ -73,10 +74,13 @@ public class ResolverThread implements Runnable {
 						this.hostHandler.drop(this.server);
 					}
 				}
-			} catch (final Exception e) {
-				System.out.println("Fallo el R & Response");
+				this.server = null;
+			} catch (final ClientException client) {
 				this.close();
-				e.printStackTrace();
+				return;
+			} catch (final CloseException close) {
+				this.close();
+				return;
 			}
 
 		} while (this.proxyKeepAlive && this.keepAlive(request)
@@ -130,7 +134,17 @@ public class ResolverThread implements Runnable {
 	}
 
 	private void sendResponse(final HttpResponseImpl response) {
-		this.client.send(response);
+		try {
+			this.client.send(response);
+		} catch (final ResponseException e) {
+			throw new CloseException("Error en el Response");
+		} catch (final exceptions.ServerException e) {
+			throw new CloseException("Error en el Response");
+		} catch (final ServerTimeOutException e) {
+			throw new CloseException("Time out Server");
+		} catch (final ConnectionException e) {
+			throw new CloseException("Error en la Conexión");
+		}
 
 	}
 
@@ -143,15 +157,13 @@ public class ResolverThread implements Runnable {
 		try {
 			response = this.server.receive();
 		} catch (final ServerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new CloseException("Error en el Server");
 		} catch (final ResponseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new CloseException("Error en el Response");
 		} catch (final EncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new CloseException("Error en el Econding");
 		}
+
 		response = RequestFilter.getInstance().doFilter(request, response);
 		// response = rf.doFilter(request, response);
 		// System.out.println(response);
@@ -165,6 +177,7 @@ public class ResolverThread implements Runnable {
 	public Connection getConnection(final String host) {
 		final EndPointConnectionHandler hostConnections = this.connections
 				.getEndPointConnectionHandler(host);
+		System.out.println("Host Connections: " + hostConnections);
 		return hostConnections.getConnection();
 	}
 

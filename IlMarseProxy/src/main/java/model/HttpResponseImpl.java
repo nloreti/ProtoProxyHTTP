@@ -8,7 +8,9 @@ import java.rmi.ServerException;
 import java.util.List;
 import java.util.Map.Entry;
 
+import exceptions.ClientException;
 import exceptions.EncodingException;
+import exceptions.MessageException;
 import exceptions.ResponseException;
 
 public class HttpResponseImpl extends HttpMsg {
@@ -51,6 +53,10 @@ public class HttpResponseImpl extends HttpMsg {
 
 	public int getStatusCode() {
 		return this.statusCode;
+	}
+
+	public void setStatusCode(final int code) {
+		this.statusCode = code;
 	}
 
 	@Override
@@ -110,8 +116,7 @@ public class HttpResponseImpl extends HttpMsg {
 		try {
 			out.write(b);
 		} catch (final IOException e) {
-			System.out.println("PROBLEMA DE CONEXION CON EL CLIENTE");
-			e.printStackTrace();
+			throw new ClientException("Problema en Conexion del Cliente");
 		}
 
 	}
@@ -121,13 +126,12 @@ public class HttpResponseImpl extends HttpMsg {
 		try {
 			out.write(bytes);
 		} catch (final IOException e) {
-			System.out.println("PROBLEMA DE CONEXION CON EL CLIENTE");
-			e.printStackTrace();
+			throw new ClientException("Problema en Conexion del Cliente");
 		}
 	}
 
 	@Override
-	public void writeStream(final OutputStream out) {
+	public void writeStream(final OutputStream out) throws MessageException {
 
 		byte[] bytes;
 
@@ -153,8 +157,7 @@ public class HttpResponseImpl extends HttpMsg {
 			}
 
 		} catch (final IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			throw new MessageException("ASD");// TODO Auto-generated catch block
 		}
 	}
 
@@ -182,7 +185,45 @@ public class HttpResponseImpl extends HttpMsg {
 					// outArray.write(c);
 				}
 			} else if ("chunked".equals(this.getHeader("Transfer-Encoding"))) {
-				System.out.println("CAYO EN CHUNKED!");
+				// System.out.println("CAYO EN CHUNKED!");
+				byte[] bytes;
+				String stringChunkLength = null;
+				while (!(stringChunkLength = this.readLine()).matches("0+")) {
+					bytes = stringChunkLength.getBytes();
+					this.write(out, bytes);
+					// transferred = bytes.length;
+					this.write(out, "\r\n".getBytes());
+					// this.validateLimit(transferred += 2);
+
+					int chunkLength;
+					try {
+						chunkLength = Integer.parseInt(stringChunkLength, 16);
+					} catch (final NumberFormatException e) {
+						throw new ResponseException();
+					}
+
+					// this.validateLimit(transferred += chunkLength);
+					while (--chunkLength >= 0) {
+						final int c = this.read();
+						if (c == -1) {
+							throw new ServerException("Fallo el server");
+						}
+						this.write(out, c);
+					}
+
+					this.readLine();
+					this.write(out, "\r\n".getBytes());
+					// this.validateLimit(transferred += 2);
+				}
+				this.write(out, '0');
+				// this.validateLimit(transferred += 1);
+				this.write(out, "\r\n".getBytes());
+				// this.validateLimit(transferred += 2);
+
+				this.readLine();
+				this.write(out, "\r\n".getBytes());
+				// this.validateLimit(transferred += 2);
+
 			}
 			// if (!this.completed) {
 			// this.setBody(outArray.toByteArray());
@@ -228,7 +269,7 @@ public class HttpResponseImpl extends HttpMsg {
 		return false;
 	}
 
-	public String getLogString(){
-		return String.valueOf(getStatusCode());
+	public String getLogString() {
+		return String.valueOf(this.getStatusCode());
 	}
 }

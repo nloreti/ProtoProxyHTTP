@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import exceptions.EncodingException;
+import exceptions.MessageException;
 
 public abstract class HttpMsg {
 	public enum HttpVersion {
@@ -145,7 +146,8 @@ public abstract class HttpMsg {
 
 	// Dado un OutputStream tiene que escribir por el mismo su respuesta;
 	// Osea response.writeStream(out) es escribi por el stream out tu respuesta;
-	public abstract void writeStream(OutputStream out) throws ServerException;
+	public abstract void writeStream(OutputStream out) throws ServerException,
+			MessageException;
 
 	abstract void writeBodyStream(OutputStream out) throws ServerException;
 
