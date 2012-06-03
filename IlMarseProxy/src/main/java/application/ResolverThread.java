@@ -27,7 +27,7 @@ public class ResolverThread implements Runnable {
 	// Cliente
 	Connection client;
 	Connection server;
-	EndPointConnectionHandler hostHandler;
+	volatile EndPointConnectionHandler hostHandler;
 	boolean proxyKeepAlive = true;
 	static final Logger logger = Logger.getLogger(ResolverThread.class);
 
@@ -52,9 +52,15 @@ public class ResolverThread implements Runnable {
 			// Obtenemos Request y Response.
 			try {
 				request = this.getRequest();
-				response = this.getResponse(request);
-			} catch (final CloseException e) {
-				// System.out.println("Fallo el R & Response");
+				try{
+					response = this.getResponse(request);
+				} catch (final CloseException e) {
+					// System.out.println("Fallo el R & Response");
+					this.proxyKeepAlive = false;
+					this.close();
+					return;
+				}
+			}catch(Exception e){
 				this.proxyKeepAlive = false;
 				this.close();
 				return;
@@ -90,6 +96,7 @@ public class ResolverThread implements Runnable {
 
 	private void close() {
 		if (this.server != null) {
+			if(hostHandler == null) System.out.println("HostHand es null!");
 			this.hostHandler.drop(this.server);
 		}
 		this.client.close();
@@ -190,14 +197,14 @@ public class ResolverThread implements Runnable {
 				final String query = req.getRequestURI().getRawQuery() != null ? "?"
 						+ req.getRequestURI().getRawQuery()
 						: "";
-				url = "http://" + req.getHeader("Host")
-						+ req.getRequestURI().getRawPath() + query;
+						url = "http://" + req.getHeader("Host")
+								+ req.getRequestURI().getRawPath() + query;
 			}
 		} else {
 			final String query = req.getRequestURI().getRawQuery() != null ? "?"
 					+ req.getRequestURI().getRawQuery()
 					: "";
-			url = req.getRequestURI().getRawPath() + query;
+					url = req.getRequestURI().getRawPath() + query;
 		}
 
 		try {
@@ -206,7 +213,7 @@ public class ResolverThread implements Runnable {
 		}
 	}
 
-	private HttpRequestImpl getRequest() {
+	private HttpRequestImpl getRequest() throws ServerException, ResponseException, EncodingException {
 
 		// HttpRequestImpl request;
 		// final InputStream input = this.client.getInputStream();
@@ -215,18 +222,14 @@ public class ResolverThread implements Runnable {
 
 		HttpRequestImpl request = null;
 		InputStream stream = null;
-		try {
-			stream = this.client.getInputStream();
-			System.out.println("STREAM: " + stream);
-		} catch (final Exception e) {
-			System.out.println("El cliente no responde o cerro la conexion");
-		}
-		try {
-			request = new HttpRequestImpl(stream);
-			this.modifyRequest(request);
-		} catch (final Exception e) {
-			System.out.println("El cliente no responde o cerro la conexion");
-		}
+
+		stream = this.client.getInputStream();
+		System.out.println("STREAM: " + stream);
+
+
+		request = new HttpRequestImpl(stream);
+		this.modifyRequest(request);
+
 		return request;
 	}
 

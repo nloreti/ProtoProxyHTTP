@@ -229,7 +229,8 @@ public class HttpResponseImpl extends HttpMsg {
 			// this.setBody(outArray.toByteArray());
 			// }
 			this.isBodyCached = true;
-		} catch (final Exception e) {
+		} catch (EncodingException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
