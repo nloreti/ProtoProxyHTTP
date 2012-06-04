@@ -12,6 +12,7 @@ import java.rmi.ServerException;
 import model.HttpRequestImpl;
 import model.HttpResponseImpl;
 import application.DinamicProxyConfiguration;
+import application.Statistics;
 import exceptions.ConnectionException;
 import exceptions.EncodingException;
 import exceptions.MessageException;
@@ -52,6 +53,7 @@ public class ConnectionImpl implements Connection {
 		try {
 			this.socket = new Socket(ip, port);
 			this.socket.setSoTimeout(this.configuration.getTimeOutToServer());
+			Statistics.getInstance().connectionOpened();
 		} catch (final SocketException e) {
 			e.printStackTrace();
 		} catch (final IOException e) {

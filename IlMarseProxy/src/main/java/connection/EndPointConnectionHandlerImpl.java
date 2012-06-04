@@ -21,7 +21,7 @@ public class EndPointConnectionHandlerImpl implements EndPointConnectionHandler 
 	}
 
 	public synchronized Connection getConnection() {
-
+		
 		if (!this.connections.isEmpty()) {
 			System.out.println("se reuso una conexion");
 			return this.connections.poll();
@@ -61,9 +61,9 @@ public class EndPointConnectionHandlerImpl implements EndPointConnectionHandler 
 	public void drop(final Connection connection) {
 		if (connection != null) {
 			connection.close();
+			Statistics.getInstance().connectionClosed();
+			System.out.println("Se cerro una conexion");
 		}
-		System.out.println("Se cerro una conexion");
-		Statistics.getInstance().connectionClosed();
 	}
 
 }

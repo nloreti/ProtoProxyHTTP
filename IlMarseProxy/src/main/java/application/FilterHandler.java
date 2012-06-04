@@ -156,18 +156,19 @@ public class FilterHandler implements ConnectionHandler {
 														// servidor que provea
 														// todo, por eso lo puse
 														// aca.
-			return "TOTAL BLOCKS:" + Statistics.getInstance().getBlocks();
+			return "TOTAL SITE BLOCKS:" + Statistics.getInstance().getSiteBlocks() + "\r\nTOTAL IP BLOCKS: " + Statistics.getInstance().getIpBlocks() + "\r\nTOTAL" +
+					" MEDIATYPE BLOCKS: " + Statistics.getInstance().getContentBlocks() + "\r\nTOTAL SIZE BLOCKS: " + Statistics.getInstance().getSizeBlocks();
 		} else if (request.startsWith("GET OPEN CONNECTIONS")) {
-			return "TOTAL BLOCKS:"
+			return "TOTAL OPEN CONNECTIONS:"
 					+ Statistics.getInstance().getOpenConnections();
 		} else if (request.startsWith("GET CLIENT BYTES TRANSMITED")) {
-			return "TOTAL BLOCKS:"
+			return "TOTAL CLIENT BYTES TRANSMITED:"
 					+ Statistics.getInstance().getProxyClientBytes();
 		} else if (request.startsWith("GET SERVERS BYTES TRANSMITED")) {
-			return "TOTAL BLOCKS:"
+			return "TOTAL SERVERS BYTES TRANSMITED:"
 					+ Statistics.getInstance().getProxyServerBytes();
 		} else if (request.startsWith("GET TRANSFORMATIONS")) {
-			return "TOTAL BLOCKS:"
+			return "TOTAL TRANSFORMATIONS:"
 					+ Statistics.getInstance().getTransformations();
 		} else if (request.startsWith("GET TOTAL BYTES TRANSMITED")) {
 			return "TOTAL BYTES TRANSMITED:"
