@@ -1,8 +1,8 @@
 package connection;
 
 import java.net.InetSocketAddress;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class CollectionConnectionHandlerImpl implements
 		CollectionConnectionHandler {
@@ -18,7 +18,8 @@ public class CollectionConnectionHandlerImpl implements
 	}
 
 	private CollectionConnectionHandlerImpl() {
-		this.handlers = new HashMap<InetSocketAddress, EndPointConnectionHandler>();
+		this.handlers = new ConcurrentHashMap<InetSocketAddress, EndPointConnectionHandler>();
+		
 	}
 
 	// TODO: Hay que validar que lo que se pase no sea fruta y creer

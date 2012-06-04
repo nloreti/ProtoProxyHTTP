@@ -7,7 +7,10 @@ public class Statistics {
 	private static volatile Statistics inst = null;
 	private final AtomicInteger proxyClientBytes;
 	private final AtomicInteger proxyServerBytes;
-	private final AtomicInteger blocks;
+	private final AtomicInteger siteBlocks;
+	private final AtomicInteger ipBlocks;
+	private final AtomicInteger contentBlocks;
+	private final AtomicInteger sizeBlocks;
 	private final AtomicInteger transformations;
 	private final AtomicInteger openConnections;
 	
@@ -20,7 +23,10 @@ public class Statistics {
 	private Statistics() {
 		proxyClientBytes = new AtomicInteger();
 		proxyServerBytes = new AtomicInteger();
-		blocks = new AtomicInteger();
+		siteBlocks = new AtomicInteger();
+		ipBlocks = new AtomicInteger();
+		contentBlocks = new AtomicInteger();
+		sizeBlocks = new AtomicInteger();
 		transformations = new AtomicInteger();
 		openConnections = new AtomicInteger();
 	}
@@ -33,8 +39,20 @@ public class Statistics {
 		proxyServerBytes.addAndGet(b);
 	} 
 	
-	public void incrementBlocks(){
-		blocks.incrementAndGet();
+	public void incrementSiteBlocks(){
+		siteBlocks.incrementAndGet();
+	}
+	
+	public void incrementIpBlocks(){
+		ipBlocks.incrementAndGet();
+	}
+	
+	public void incrementSizeBlocks(){
+		sizeBlocks.incrementAndGet();
+	}
+	
+	public void incrementContentBlocks(){
+		contentBlocks.incrementAndGet();
 	}
 	
 	public void incrementTransformations(){
@@ -57,8 +75,20 @@ public class Statistics {
 		return proxyServerBytes.intValue();
 	}
 
-	public int getBlocks() {
-		return blocks.intValue();
+	public int getSiteBlocks() {
+		return siteBlocks.intValue();
+	}
+	
+	public int getIpBlocks() {
+		return ipBlocks.intValue();
+	}
+	
+	public int getContentBlocks() {
+		return contentBlocks.intValue();
+	}
+	
+	public int getSizeBlocks() {
+		return sizeBlocks.intValue();
 	}
 
 	public int getTransformations() {

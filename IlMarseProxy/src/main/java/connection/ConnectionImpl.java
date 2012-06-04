@@ -12,6 +12,7 @@ import java.rmi.ServerException;
 import model.HttpRequestImpl;
 import model.HttpResponseImpl;
 import application.DinamicProxyConfiguration;
+import application.Statistics;
 import exceptions.ConnectionException;
 import exceptions.EncodingException;
 import exceptions.MessageException;
@@ -52,6 +53,7 @@ public class ConnectionImpl implements Connection {
 		try {
 			this.socket = new Socket(ip, port);
 			this.socket.setSoTimeout(this.configuration.getTimeOutToServer());
+			Statistics.getInstance().connectionOpened();
 		} catch (final SocketException e) {
 			e.printStackTrace();
 		} catch (final IOException e) {
@@ -63,6 +65,7 @@ public class ConnectionImpl implements Connection {
 		this.socket = socket;
 		try {
 			this.socket.setSoTimeout(this.configuration.getTimeOutToClient());
+			Statistics.getInstance().connectionOpened();
 		} catch (final SocketException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -74,6 +77,7 @@ public class ConnectionImpl implements Connection {
 		try {
 			this.socket = new Socket(ip, port);
 			this.socket.setSoTimeout(this.configuration.getTimeOutToServer());
+			Statistics.getInstance().connectionOpened();
 		} catch (final IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -177,8 +181,10 @@ public class ConnectionImpl implements Connection {
 		try {
 			// si no intento cerrarlo.
 			this.socket.close();
+			Statistics.getInstance().connectionClosed();
 		} catch (final IOException e) {
 			// TODO Auto-generated catch block
+			Statistics.getInstance().connectionClosed();
 			e.printStackTrace();
 		}
 	}

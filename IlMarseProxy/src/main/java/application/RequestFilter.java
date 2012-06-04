@@ -125,6 +125,7 @@ public class RequestFilter {
 				return this.generateBlockedResponse(response);
 			}
 			if (this.destinationIPIsBlocked(request)) {
+				Statistics.getInstance().incrementIpBlocks();
 				return this.generateBlockedResponseByIp(
 						InetAddress.getByName(request.getHost())
 								.getHostAddress(), response);
@@ -132,6 +133,7 @@ public class RequestFilter {
 			if (this.images) {
 				if (response.containsType("image/.*")) {
 					System.out.println("ENTRA");
+					Statistics.getInstance().incrementTransformations();
 					this.rotateImage(response);
 				}
 			}
@@ -144,16 +146,19 @@ public class RequestFilter {
 				}
 			}
 			if (this.urisBlocked(request)) {
+				Statistics.getInstance().incrementSiteBlocks();
 				return this.generateBlockedResponseByUri(request
 						.getRequestURI().toString(), response);
 			}
 			if (response.getContentLength() != null) {
 				if (Integer.valueOf(response.getContentLength()) > this.maxSize) {
+					Statistics.getInstance().incrementSizeBlocks();
 					return this.generateBlockedResponse(this.maxSize, response);
 				}
 			}
 
 			if (this.isMediaTypeBlockable(response)) {
+				Statistics.getInstance().incrementContentBlocks();
 				return this.generateBlockedResponseByMediaType(response);
 			}
 		} catch (final UnknownHostException e) {

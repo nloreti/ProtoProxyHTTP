@@ -9,6 +9,7 @@ import application.DinamicProxyConfiguration;
 
 public class ConnectionHandlerImpl implements ConnectionHandler {
 
+	
 	InetSocketAddress sockAddress;
 	private BlockingQueue<Connection> connections;
 	private DinamicProxyConfiguration configuration = DinamicProxyConfiguration
@@ -20,7 +21,7 @@ public class ConnectionHandlerImpl implements ConnectionHandler {
 	}
 
 	public synchronized Connection getConnection() {
-
+		
 		if (!this.connections.isEmpty()) {
 			return this.connections.poll();
 		}
@@ -59,5 +60,7 @@ public class ConnectionHandlerImpl implements ConnectionHandler {
 			connection.close();
 		}
 	}
+	
+
 
 }

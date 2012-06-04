@@ -107,7 +107,7 @@ public class ResolverThread implements Runnable {
 	private void close() {
 		if (this.server != null) {
 			if (this.hostConnections == null) {
-				System.out.println("HostHand es null!");
+				System.out.println("HostConnections es null!");
 			}
 			this.hostConnections.drop(this.server);
 		}
