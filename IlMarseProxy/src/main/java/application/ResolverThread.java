@@ -5,14 +5,12 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.rmi.ServerException;
 
-import logger.ErrorLogger;
 import logger.FullLogger;
 import logger.HumanLogger;
 import model.HttpRequestImpl;
 import model.HttpResponseImpl;
 
 import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
 
 import connection.CollectionConnectionHandler;
 import connection.CollectionConnectionHandlerImpl;
@@ -32,9 +30,6 @@ public class ResolverThread implements Runnable {
 	Connection server;
 	volatile EndPointConnectionHandler hostConnections;
 	boolean proxyKeepAlive = true;
-	static final Logger fullLogger = Logger.getLogger(FullLogger.class);
-	static final Logger humanLogger = Logger.getLogger(HumanLogger.class);
-	static final Logger errorLogger = Logger.getLogger(ErrorLogger.class);
 	
 	private static Integer MAX_FORWARDS = 5;
 
@@ -53,6 +48,9 @@ public class ResolverThread implements Runnable {
 		HttpRequestImpl request = null;
 		HttpResponseImpl response = null;
 		BasicConfigurator.configure();
+		
+		FullLogger fullLogger = new FullLogger(this.getClass());
+		HumanLogger humanLogger = new HumanLogger(this.getClass());
 
 		// final RequestFilter rf = RequestFilter.getInstance();
 		do {
@@ -73,11 +71,10 @@ public class ResolverThread implements Runnable {
 				return;
 			}
 
-			fullLogger.info("Request: " + request + "\n\n\n\n\n");
-			fullLogger.info("Response: " + response + "________________________________________________");
-			humanLogger.info(request.getLogString());
-			humanLogger.info(response.getLogString());
-			humanLogger.info("________________________________");
+			fullLogger.log("Request: " + request + "\n\n\n\n\n");
+			fullLogger.log("Response: " + response);
+			humanLogger.log(request.getLogString());
+			humanLogger.log(response.getLogString());
 			// Retornamos la respuesta.
 			try {
 				final boolean respKeepAlive = this.keepAlive(response);
