@@ -5,6 +5,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.rmi.ServerException;
 
+import logger.ErrorLogger;
+import logger.FullLogger;
+import logger.HumanLogger;
 import model.HttpRequestImpl;
 import model.HttpResponseImpl;
 
@@ -29,7 +32,10 @@ public class ResolverThread implements Runnable {
 	Connection server;
 	volatile EndPointConnectionHandler hostConnections;
 	boolean proxyKeepAlive = true;
-	static final Logger logger = Logger.getLogger(ResolverThread.class);
+	static final Logger fullLogger = Logger.getLogger(FullLogger.class);
+	static final Logger humanLogger = Logger.getLogger(HumanLogger.class);
+	static final Logger errorLogger = Logger.getLogger(ErrorLogger.class);
+	
 	private static Integer MAX_FORWARDS = 5;
 
 	// Configuracion del proxy
@@ -67,8 +73,11 @@ public class ResolverThread implements Runnable {
 				return;
 			}
 
-			// logger.warn("Request: " + request.getLogString());
-			// logger.warn("Response: " + response.getLogString());
+			fullLogger.info("Request: " + request + "\n\n\n\n\n");
+			fullLogger.info("Response: " + response + "________________________________________________");
+			humanLogger.info(request.getLogString());
+			humanLogger.info(response.getLogString());
+			humanLogger.info("________________________________");
 			// Retornamos la respuesta.
 			try {
 				final boolean respKeepAlive = this.keepAlive(response);

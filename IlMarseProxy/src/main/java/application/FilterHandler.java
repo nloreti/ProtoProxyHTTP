@@ -42,7 +42,7 @@ public class FilterHandler implements ConnectionHandler {
 	private String parse(final String request) {
 		final RequestFilter rf = RequestFilter.getInstance();
 		if (request.equals("HELP")) {
-			return "Manual for usage:\64Type any command from the following list:\64\tBLOCK ACCESS blocks every access from the proxy.\64\tUNLOCK ACCESS grants access\64\tL33T ON turns l33t mode on\64\tL33T OFF turns l33t mode off\64\tBLOCK IP [ip] blocks the given [ip] or group of ip's\64\tUNLOCK IP [ip] unlocks the given [ip] or group of ip's\64\tBLOCK URI [uri] blocks the given [uri] or regular expression for uri\64\tUNLOCK URI [uri] unlocks the given uri or regular expression for uri's\64\tMAXSIZE [size] sets a max quantity of bytes that can pass throught the proxy, set on 0 for unlimited amount\64\tIMAGES ON turns on the flipping for images\64\tIMAGES OFF turns off the flipping for images\64\tBLOCK MEDIATYPE [media type] blocks the given [media type]\64\tUNLOCK MEDIATYPE [mediatype] unlocks the given [media type]\64End\64";
+			return "Manual for usage:\64Type any command from the following list:\64\tBLOCK ACCESS blocks every access from the proxy.\64\tUNLOCK ACCESS grants access\64\tL33T ON turns l33t mode on\64\tL33T OFF turns l33t mode off\64\tBLOCK IP [ip] blocks the given [ip] or group of ip's\64\tUNLOCK IP [ip] unlocks the given [ip] or group of ip's\64\tBLOCK URI [uri] blocks the given [uri] or regular expression for uri\64\tUNLOCK URI [uri] unlocks the given uri or regular expression for uri's\64\tSET MAXSIZE [size] sets a max quantity of bytes that can pass throught the proxy, set on 0 for unlimited amount\64\tIMAGES ON turns on the flipping for images\64\tIMAGES OFF turns off the flipping for images\64\tBLOCK MEDIATYPE [media type] blocks the given [media type]\64\tUNLOCK MEDIATYPE [mediatype] unlocks the given [media type]\64End\64";
 		} else if (request.equals("BLOCK ACCESS")) {
 			if (!rf.access()) {
 				return "ACCESS IS ALREADY BLOCKED";
@@ -81,7 +81,7 @@ public class FilterHandler implements ConnectionHandler {
 			return "IMAGES WILL NOW ROTATE";
 		} else if (request.startsWith("BLOCK IP ")) {
 			final String ip = request.substring(9);
-			if (ip.matches("%d.%d.%d")) {
+			if (!ip.matches("%d.%d.%d.%d")) {
 				return "INVALID IP";
 			}
 			if (!rf.blockIP(ip)) {
@@ -90,7 +90,7 @@ public class FilterHandler implements ConnectionHandler {
 			return ip + " BLOCKED";
 		} else if (request.startsWith("UNLOCK IP ")) {
 			final String ip = request.substring(10);
-			if (!ip.matches("%d.%d.%d")) {
+			if (!ip.matches("%d.%d.%d.%d")) {
 				return "INVALID IP";
 			}
 			if (rf.unlockIP(ip)) {
