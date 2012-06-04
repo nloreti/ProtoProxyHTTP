@@ -8,14 +8,6 @@ public interface ProxyConfiguration {
 
 	public void setProxyPort(int port);
 
-	public int getMaxThreads();
-
-	public void setMaxThreads(int max);
-
-	public int getMinThreads();
-
-	public void setMinthreads(int min);
-
 	public int getInicialThreads();
 
 	public void setInicialThreads(int startPoll);
@@ -32,9 +24,9 @@ public interface ProxyConfiguration {
 
 	public void setChainProxyPort(int port);
 
-	public int getWebServerPort();
+	public int getFilterPort();
 
-	public void setWebServerPort(int port);
+	public void setFilterPort(int port);
 
 	public int getMaxServersPerConnection();
 
@@ -52,9 +44,9 @@ public interface ProxyConfiguration {
 
 	public void setProxyBackLog(int backlog);
 
-	public int getWebServerBackLog();
+	public int getFilterBackLog();
 
-	public void setWebServerBackLog(int backlog);
+	public void setFilterBackLog(int backlog);
 
 	public boolean isClientPersistent();
 

@@ -27,9 +27,10 @@ public class ResolverThread implements Runnable {
 	// Cliente
 	Connection client;
 	Connection server;
-	EndPointConnectionHandler hostHandler;
+	EndPointConnectionHandler hostConnections;
 	boolean proxyKeepAlive = true;
 	static final Logger logger = Logger.getLogger(ResolverThread.class);
+	private static Integer MAX_FORWARDS = 5;
 
 	// Configuracion del proxy
 	private ProxyConfiguration configuration = DinamicProxyConfiguration
@@ -67,11 +68,11 @@ public class ResolverThread implements Runnable {
 				final boolean respKeepAlive = this.keepAlive(response);
 				this.setHeaders(response, request);
 				this.sendResponse(response);
-				if (this.hostHandler != null) {
+				if (this.hostConnections != null) {
 					if (respKeepAlive) {
-						this.hostHandler.free(this.server);
+						this.hostConnections.free(this.server);
 					} else {
-						this.hostHandler.drop(this.server);
+						this.hostConnections.drop(this.server);
 					}
 				}
 				this.server = null;
@@ -90,7 +91,7 @@ public class ResolverThread implements Runnable {
 
 	private void close() {
 		if (this.server != null) {
-			this.hostHandler.drop(this.server);
+			this.hostConnections.drop(this.server);
 		}
 		this.client.close();
 
@@ -115,10 +116,22 @@ public class ResolverThread implements Runnable {
 
 	private void setHeaders(final HttpResponseImpl response,
 			final HttpRequestImpl request) {
+
+		String viaHeader = null;
+
 		if (this.keepAlive(request)) {
 			response.replaceHeader("Connection", "keep-alive");
 		} else {
 			response.replaceHeader("Connection", "close");
+		}
+
+		if (response.getHeader("Via") != null) {
+			viaHeader = response.getHeader("Via");
+			viaHeader = viaHeader + "," + response.getProtocol()
+					+ " IlMarseProxy";
+			response.replaceHeader("Via", viaHeader);
+		} else {
+			response.addHeader("Via", response.getProtocol() + " IlMarseProxy");
 		}
 
 	}
@@ -175,14 +188,31 @@ public class ResolverThread implements Runnable {
 	// conexiones disponbiles para ese host.
 
 	public Connection getConnection(final String host) {
-		final EndPointConnectionHandler hostConnections = this.connections
+		this.hostConnections = this.connections
 				.getEndPointConnectionHandler(host);
-		System.out.println("Host Connections: " + hostConnections);
-		return hostConnections.getConnection();
+		// System.out.println("Host Connections: " + hostConnections);
+		return this.hostConnections.getConnection();
 	}
 
 	private void modifyRequest(final HttpRequestImpl req) {
 		String url = null;
+		if (req.getHeader("Via") != null) {
+			req.appendHeader("Via", req.getProtocol() + " IlMarseProxy");
+		} else {
+			req.addHeader("Via", req.getProtocol() + " IlMarseProxy");
+		}
+
+		Integer currentforwards;
+		if (req.getHeader("Max-Forwards") != null) {
+			currentforwards = Integer.valueOf(req.getHeader("Max-Forwards"));
+			if (currentforwards > 0) {
+				currentforwards--;
+			}
+		} else {
+			currentforwards = MAX_FORWARDS;
+		}
+		req.replaceHeader("Max-Forwards", String.valueOf(currentforwards));
+
 		if (this.configuration.hasProxy()) {
 			if (req.getRequestURI().isAbsolute()) {
 				url = req.getRequestURI().toString();
@@ -217,17 +247,19 @@ public class ResolverThread implements Runnable {
 		InputStream stream = null;
 		try {
 			stream = this.client.getInputStream();
-			System.out.println("STREAM: " + stream);
+			// System.out.println("STREAM: " + stream);
 		} catch (final Exception e) {
-			System.out.println("El cliente no responde o cerro la conexion");
+			throw new CloseException("Falla al traer el InputStream");
+			// System.out.println("El cliente no responde o cerro la conexion");
 		}
 		try {
 			request = new HttpRequestImpl(stream);
 			this.modifyRequest(request);
 		} catch (final Exception e) {
-			System.out.println("El cliente no responde o cerro la conexion");
+			throw new CloseException(
+					"El cliente no response o cerro la conexion");
+			// System.out.println("El cliente no responde o cerro la conexion");
 		}
 		return request;
 	}
-
 }

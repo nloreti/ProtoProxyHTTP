@@ -50,10 +50,6 @@ public class ProxyHTTP implements Runnable {
 		System.out.println("Proxy Port: " + this.configuration.getProxyPort());
 		System.out.println("Initial Threads: "
 				+ this.configuration.getInicialThreads());
-		System.out
-				.println("Max Threads: " + this.configuration.getMaxThreads());
-		System.out
-				.println("Min Threads: " + this.configuration.getMinThreads());
 		System.out.println("Chain Proxy IP: "
 				+ this.configuration.getChainProxyIP());
 		System.out.println("Chain Proxy Port: "

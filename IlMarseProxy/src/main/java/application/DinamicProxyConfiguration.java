@@ -3,9 +3,12 @@ package application;
 import java.io.File;
 import java.net.InetAddress;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 public class DinamicProxyConfiguration implements ProxyConfiguration {
 
@@ -27,21 +30,47 @@ public class DinamicProxyConfiguration implements ProxyConfiguration {
 	}
 
 	private DinamicConfiguration parseXML(final String path) {
-		JAXBContext context;
-		DinamicConfiguration configuration;
+
+		final DinamicConfiguration dinamicConfiguration = new DinamicConfiguration();
 
 		try {
+			final DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory
 
-			context = JAXBContext.newInstance("application");
-			final Unmarshaller unmarshaller = context.createUnmarshaller();
-			configuration = (DinamicConfiguration) unmarshaller
-					.unmarshal(new File(path));
+			.newInstance();
+			final DocumentBuilder docBuilder = docBuilderFactory
+					.newDocumentBuilder();
+			final Document doc = docBuilder.parse(new File(path));
+			dinamicConfiguration.build(doc);
+		} catch (final SAXParseException err) {
+			System.out.println("** Parsing error" + ", line "
+					+ err.getLineNumber() + ", uri " + err.getSystemId());
+			System.out.println(" " + err.getMessage());
 
-		} catch (final JAXBException e) {
-			e.printStackTrace();
-			configuration = null;
+		} catch (final SAXException e) {
+			final Exception x = e.getException();
+			((x == null) ? e : x).printStackTrace();
+
+		} catch (final Throwable t) {
+			t.printStackTrace();
 		}
-		return configuration;
+
+		return dinamicConfiguration;
+
+		// JAXBContext context;
+		// DinamicConfiguration configuration;
+		//
+		// try {
+		//
+		// context = JAXBContext.newInstance("application");
+		// final Unmarshaller unmarshaller = context.createUnmarshaller();
+		// configuration = (DinamicConfiguration) unmarshaller
+		// .unmarshal(new File(path));
+		//
+		// } catch (final JAXBException e) {
+		// e.printStackTrace();
+		// configuration = null;
+		// }
+		// return configuration;
 	}
 
 	public int getProxyPort() {
@@ -51,22 +80,6 @@ public class DinamicProxyConfiguration implements ProxyConfiguration {
 	public void setProxyPort(final int port) {
 		this.configuration.setProxyPort(port);
 
-	}
-
-	public int getMaxThreads() {
-		return this.configuration.getMaxThreads();
-	}
-
-	public void setMaxThreads(final int maxThreads) {
-		this.configuration.setMaxThreads(maxThreads);
-	}
-
-	public int getMinThreads() {
-		return this.configuration.getMinThreads();
-	}
-
-	public void setMinthreads(final int minThreads) {
-		this.configuration.setMinThreads(minThreads);
 	}
 
 	public int getInicialThreads() {
@@ -115,14 +128,6 @@ public class DinamicProxyConfiguration implements ProxyConfiguration {
 		this.configuration.setChainProxyPort(chainProxyPort);
 	}
 
-	public int getWebServerPort() {
-		return this.configuration.getWebServerPort();
-	}
-
-	public void setWebServerPort(final int port) {
-		this.configuration.setWebServerPort(port);
-	}
-
 	public int getMaxServersPerConnection() {
 		return this.configuration.getMaxServersPerConnection();
 	}
@@ -159,14 +164,6 @@ public class DinamicProxyConfiguration implements ProxyConfiguration {
 		this.configuration.setProxyBackLog(backlog);
 	}
 
-	public int getWebServerBackLog() {
-		return this.configuration.getWebServerBackLog();
-	}
-
-	public void setWebServerBackLog(final int webServerBackLog) {
-		this.configuration.setWebServerBackLog(webServerBackLog);
-	}
-
 	public boolean isClientPersistent() {
 		// TODO;return configuration.
 		return true;
@@ -175,6 +172,26 @@ public class DinamicProxyConfiguration implements ProxyConfiguration {
 	public boolean saveConfiguration() {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	public int getFilterPort() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public void setFilterPort(final int port) {
+		// TODO Auto-generated method stub
+
+	}
+
+	public int getFilterBackLog() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public void setFilterBackLog(final int backlog) {
+		// TODO Auto-generated method stub
+
 	}
 
 }

@@ -1,58 +1,108 @@
 package application;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "", propOrder = { "maxThreads", "minThreads", "inicialThreads",
-		"hasProxy", "chainProxyIp", "chainProxyPort", "webServerPort",
-		"proxyPort", "maxServersPerConnection", "proxyBackLog",
-		"webServerBackLog", "timeOutClient", "timeOutServer" })
-@XmlRootElement(name = "configuration")
 public class DinamicConfiguration {
-	// #TODO: Para que sea dinámico, deben ser volatile ya que en otro caso,
-	// después de actualiar los valores no van a ser visibles por otros threads.
-	@XmlElement(name = "maxThreads")
 	protected Integer maxThreads;
-
-	@XmlElement(name = "minThreads")
 	protected Integer minThreads;
-
-	@XmlElement(name = "inicialThreads")
 	protected Integer inicialThreads;
-
-	@XmlElement(name = "hasProxy")
 	protected boolean hasProxy;
-
-	@XmlElement(name = "chainProxyIp")
 	protected String chainProxyIp;
-
-	@XmlElement(name = "chainProxyPort")
 	protected Integer chainProxyPort;
-
-	@XmlElement(name = "webServerPort")
-	protected Integer webServerPort;
-
-	@XmlElement(name = "proxyPort")
+	protected Integer filterPort;
 	protected Integer proxyPort;
-
-	@XmlElement(name = "maxServersPerConnection")
 	protected Integer maxServersPerConnection;
-
-	@XmlElement(name = "timeOutClient")
 	protected Integer timeOutClient;
-
-	@XmlElement(name = "timeOutServer")
 	protected Integer timeOutServer;
-
-	@XmlElement(name = "proxyBackLog")
 	protected Integer proxyBackLog;
+	protected Integer filterLog;
 
-	@XmlElement(name = "webServerBackLog")
-	protected Integer webServerBackLog;
+	public DinamicConfiguration() {
+	}
+
+	public void build(final Document doc) {
+
+		doc.getDocumentElement().normalize();
+		System.out.println("Root element of the doc is "
+				+ doc.getDocumentElement().getNodeName());
+
+		final NodeList listOfmetricScoperesult = doc
+				.getElementsByTagName("configuration");
+
+		for (int s = 0; s < listOfmetricScoperesult.getLength(); s++) {
+
+			final Node firstMetricNode = listOfmetricScoperesult.item(s);
+
+			final NodeList listOfmetricResults = firstMetricNode
+					.getChildNodes();
+
+			for (int n = 0; n < listOfmetricResults.getLength(); n++) {
+
+				if (!(n % 2 == 0)) {// No me preguntes porque es modulo dos,
+									// escapa de mi conocimiento jaja.
+					final Node metricNode = listOfmetricResults.item(n);
+					final Element elemento = (Element) metricNode;
+
+					final String metricName = elemento.getAttribute("value");
+
+					System.out.println(metricName);
+
+					if (elemento.getNodeName().equals("inicialThreads")) {
+						this.inicialThreads = Integer.valueOf(elemento
+								.getAttribute("value"));
+					}
+					if (elemento.getNodeName().equals("chainProxyIp")) {
+						this.chainProxyIp = elemento.getAttribute("value");
+					}
+					if (elemento.getNodeName().equals("chainProxyPort")) {
+						this.chainProxyPort = Integer.valueOf(elemento
+								.getAttribute("value"));
+					}
+					if (elemento.getNodeName().equals("filterPort")) {
+						this.filterPort = Integer.valueOf(elemento
+								.getAttribute("value"));
+					}
+					if (elemento.getNodeName().equals("filterBackLog")) {
+						this.filterLog = Integer.valueOf(elemento
+								.getAttribute("value"));
+					}
+					if (elemento.getNodeName().equals("proxyPort")) {
+						this.proxyPort = Integer.valueOf(elemento
+								.getAttribute("value"));
+					}
+					if (elemento.getNodeName().equals("proxyBackLog")) {
+						this.proxyBackLog = Integer.valueOf(elemento
+								.getAttribute("value"));
+					}
+					if (elemento.getNodeName()
+							.equals("maxServersPerConnection")) {
+						this.maxServersPerConnection = Integer.valueOf(elemento
+								.getAttribute("value"));
+					}
+					if (elemento.getNodeName().equals("timeOutClient")) {
+						this.timeOutClient = Integer.valueOf(elemento
+								.getAttribute("value"));
+					}
+					if (elemento.getNodeName().equals("timeOutServer")) {
+						this.timeOutServer = Integer.valueOf(elemento
+								.getAttribute("value"));
+					}
+					if (elemento.getNodeName().equals("hasProxy")) {
+						final String value = elemento.getAttribute("value");
+						if (value.equals("false")) {
+							this.hasProxy = false;
+						} else {
+							this.hasProxy = true;
+						}
+					}
+				}
+			}
+		}
+
+	}
 
 	public Integer getMaxThreads() {
 		return this.maxThreads;
@@ -105,14 +155,6 @@ public class DinamicConfiguration {
 		this.chainProxyPort = chainProxyPort;
 	}
 
-	public Integer getWebServerPort() {
-		return this.webServerPort;
-	}
-
-	public void setWebServerPort(final Integer webServerPort) {
-		this.webServerPort = webServerPort;
-	}
-
 	public Integer getProxyPort() {
 		return this.proxyPort;
 	}
@@ -153,12 +195,36 @@ public class DinamicConfiguration {
 		this.proxyBackLog = proxyBackLog;
 	}
 
-	public Integer getWebServerBackLog() {
-		return this.webServerBackLog;
+	public Integer getFilterPort() {
+		return this.filterPort;
 	}
 
-	public void setWebServerBackLog(final Integer webServerBackLog) {
-		this.webServerBackLog = webServerBackLog;
+	public void setFilterPort(final Integer filterPort) {
+		this.filterPort = filterPort;
+	}
+
+	public Integer getTimeOutClient() {
+		return this.timeOutClient;
+	}
+
+	public void setTimeOutClient(final Integer timeOutClient) {
+		this.timeOutClient = timeOutClient;
+	}
+
+	public Integer getTimeOutServer() {
+		return this.timeOutServer;
+	}
+
+	public void setTimeOutServer(final Integer timeOutServer) {
+		this.timeOutServer = timeOutServer;
+	}
+
+	public Integer getFilterLog() {
+		return this.filterLog;
+	}
+
+	public void setFilterLog(final Integer filterLog) {
+		this.filterLog = filterLog;
 	}
 
 }
