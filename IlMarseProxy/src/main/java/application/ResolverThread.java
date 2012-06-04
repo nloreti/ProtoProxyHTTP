@@ -27,7 +27,7 @@ public class ResolverThread implements Runnable {
 	// Cliente
 	Connection client;
 	Connection server;
-	EndPointConnectionHandler hostConnections;
+	volatile EndPointConnectionHandler hostConnections;
 	boolean proxyKeepAlive = true;
 	static final Logger logger = Logger.getLogger(ResolverThread.class);
 	private static Integer MAX_FORWARDS = 5;
@@ -53,9 +53,15 @@ public class ResolverThread implements Runnable {
 			// Obtenemos Request y Response.
 			try {
 				request = this.getRequest();
-				response = this.getResponse(request);
-			} catch (final CloseException e) {
-				// System.out.println("Fallo el R & Response");
+				try {
+					response = this.getResponse(request);
+				} catch (final CloseException e) {
+					// System.out.println("Fallo el R & Response");
+					this.proxyKeepAlive = false;
+					this.close();
+					return;
+				}
+			} catch (final Exception e) {
 				this.proxyKeepAlive = false;
 				this.close();
 				return;
@@ -91,6 +97,9 @@ public class ResolverThread implements Runnable {
 
 	private void close() {
 		if (this.server != null) {
+			if (this.hostConnections == null) {
+				System.out.println("HostHand es null!");
+			}
 			this.hostConnections.drop(this.server);
 		}
 		this.client.close();
@@ -236,7 +245,8 @@ public class ResolverThread implements Runnable {
 		}
 	}
 
-	private HttpRequestImpl getRequest() {
+	private HttpRequestImpl getRequest() throws ServerException,
+			ResponseException, EncodingException {
 
 		// HttpRequestImpl request;
 		// final InputStream input = this.client.getInputStream();

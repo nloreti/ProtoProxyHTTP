@@ -8,7 +8,7 @@ public class CollectionConnectionHandlerImpl implements
 		CollectionConnectionHandler {
 
 	static CollectionConnectionHandlerImpl instance;
-	private Map<InetSocketAddress, EndPointConnectionHandler> handlers;
+	private final Map<InetSocketAddress, EndPointConnectionHandler> handlers;
 
 	public synchronized static CollectionConnectionHandler getInstance() {
 		if (instance == null) {

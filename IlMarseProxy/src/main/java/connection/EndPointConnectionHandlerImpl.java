@@ -6,6 +6,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import application.DinamicProxyConfiguration;
+import application.Statistics;
 
 public class EndPointConnectionHandlerImpl implements EndPointConnectionHandler {
 
@@ -22,6 +23,7 @@ public class EndPointConnectionHandlerImpl implements EndPointConnectionHandler 
 	public synchronized Connection getConnection() {
 
 		if (!this.connections.isEmpty()) {
+			System.out.println("se reuso una conexion");
 			return this.connections.poll();
 		}
 
@@ -35,6 +37,7 @@ public class EndPointConnectionHandlerImpl implements EndPointConnectionHandler 
 			connection = new ConnectionImpl(this.sockAddress);
 		}
 		System.out.println("Connexion: " + connection);
+		Statistics.getInstance().connectionOpened();
 		return connection;
 	}
 
@@ -59,6 +62,8 @@ public class EndPointConnectionHandlerImpl implements EndPointConnectionHandler 
 		if (connection != null) {
 			connection.close();
 		}
+		System.out.println("Se cerro una conexion");
+		Statistics.getInstance().connectionClosed();
 	}
 
 }
