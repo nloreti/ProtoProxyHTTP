@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import application.Statistics;
+
 import exceptions.EncodingException;
 import exceptions.MessageException;
 
@@ -21,7 +23,8 @@ public abstract class HttpMsg {
 
 	// private Map<String,String> headers = new HashMap<String, String>();
 	// final InputStream in;
-
+	int read = 0;
+	int written = 0;
 	private Map<String, List<String>> headers;
 	private String protocol;
 	private byte[] body;
@@ -126,7 +129,6 @@ public abstract class HttpMsg {
 
 		String line = null;
 		try {
-
 			line = new String(b.toByteArray(), encoding);
 		} catch (final UnsupportedEncodingException e) {
 			throw new EncodingException("ISO-8859-1");
@@ -138,6 +140,7 @@ public abstract class HttpMsg {
 	public int read() throws ServerException {
 		try {
 			// System.out.println("READ: " + this.in.toString());
+			read++;
 			return this.in.read();
 		} catch (final IOException e) {
 			throw new ServerException("Connection Problem");
@@ -154,5 +157,12 @@ public abstract class HttpMsg {
 	abstract String getHost();
 
 	abstract void parseFirstLine(String[] line);
-
+	
+	public int getRead(){
+		return read;
+	}
+	
+	public int getWritten(){
+		return written;
+	}
 }

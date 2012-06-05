@@ -82,6 +82,7 @@ public class ResolverThread implements Runnable {
 //				respKeepAlive = true;
 				this.setHeaders(response, request);
 				this.sendResponse(response);
+				Statistics.getInstance().incrementProxyServerBytes(response.getWritten() + response.toString().length());
 				if (this.hostConnections != null) {
 					if (respKeepAlive) {
 						this.hostConnections.free(this.server);
@@ -165,6 +166,7 @@ public class ResolverThread implements Runnable {
 	private void sendResponse(final HttpResponseImpl response) {
 		try {
 			this.client.send(response);
+			Statistics.getInstance().incrementProxyClientBytes(response.getWritten());
 		} catch (final ResponseException e) {
 			throw new CloseException("Error en el Response");
 		} catch (final exceptions.ServerException e) {
@@ -277,6 +279,7 @@ public class ResolverThread implements Runnable {
 					"El cliente no response o cerro la conexion");
 			// System.out.println("El cliente no responde o cerro la conexion");
 		}
+		Statistics.getInstance().incrementProxyClientBytes(request.getRead());
 		return request;
 	}
 }

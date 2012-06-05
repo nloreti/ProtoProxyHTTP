@@ -11,7 +11,9 @@ import java.net.URISyntaxException;
 public class FilterHandler implements ConnectionHandler {
 
 	RequestFilter rf;
-
+	private final String user = "TP";
+	private final String pass = "PROTOS";
+	
 	public void handle(final Socket s) throws IOException {
 		// InputStream in = s.getInputStream();
 		// OutputStream out = s.getOutputStream();
@@ -20,6 +22,29 @@ public class FilterHandler implements ConnectionHandler {
 		final PrintWriter toClient = new PrintWriter(s.getOutputStream(), true);
 		// byte[] receiveBuf = new byte[BUFSIZE]; // Receive buffer
 		String response;
+		boolean auth = false;
+			do {
+				toClient.println("USER:");
+				response = fromClient.readLine();
+				if(response.contains(user)){
+					toClient.println("PASS:");
+					response = fromClient.readLine();
+					if(response.contains(pass)){
+						auth=true;
+					}
+				}
+				// int recvMsgSize = 0;
+				// int totalSize = 0;
+				// while ((recvMsgSize = in.read(receiveBuf, totalSize, BUFSIZE
+				// - totalSize)) != -1) {
+				// totalSize += recvMsgSize;
+				// }
+				// response = parse(new String(receiveBuf));
+				// System.out.println("asd");
+				// out.write(response.getBytes("UTF-16LE"), 0,
+				// response.getBytes("UTF-16LE").length);
+				//
+			} while (!response.equals("BYE!") && !auth);
 		// Receive until client closes connection
 		do {
 			response = this.parse(fromClient.readLine());
