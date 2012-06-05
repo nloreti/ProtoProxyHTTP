@@ -2,6 +2,8 @@ package connection;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -9,7 +11,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import application.DinamicProxyConfiguration;
 
 public class EndPointConnectionHandlerImpl implements EndPointConnectionHandler {
-
+	private final int idleConnectionTimeMs=3000;
+	private long lastModified; 
+	private Timer timer = new Timer();
 	InetSocketAddress sockAddress;
 	AtomicInteger con = new AtomicInteger();
 	private BlockingQueue<Connection> connections;
@@ -19,6 +23,22 @@ public class EndPointConnectionHandlerImpl implements EndPointConnectionHandler 
 	public EndPointConnectionHandlerImpl(final InetSocketAddress sockAddress) {
 		this.sockAddress = sockAddress;
 		this.connections = new LinkedBlockingQueue<Connection>();
+		lastModified = System.currentTimeMillis();
+		final TimerTask task = new TimerTask() {
+			@Override
+			public synchronized void run() {
+				if(lastModified + idleConnectionTimeMs < System.currentTimeMillis()){
+					if(!connections.isEmpty()){
+						Connection c = connections.poll();
+						if(!c.isClosed()){
+							c.close();
+						}
+					}
+				}
+			}
+		};
+
+		this.timer.scheduleAtFixedRate(task, 0, 1000);
 	}
 
 	public synchronized Connection getConnection() {
@@ -37,6 +57,7 @@ public class EndPointConnectionHandlerImpl implements EndPointConnectionHandler 
 		} else {
 			connection = new ConnectionImpl(this.sockAddress);
 		}
+		lastModified = System.currentTimeMillis();
 		System.out.println(sockAddress + ": " + con.incrementAndGet());
 		System.out.println("Connexion: " + connection);
 		return connection;
@@ -51,6 +72,7 @@ public class EndPointConnectionHandlerImpl implements EndPointConnectionHandler 
 					this.drop(connection);
 					return;
 				}
+				lastModified = System.currentTimeMillis();
 				this.connections.offer(connection);
 				System.err.println("Se ofrece una conexion -------------");
 			} catch (final IOException e) {
