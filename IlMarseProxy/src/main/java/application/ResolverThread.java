@@ -77,7 +77,9 @@ public class ResolverThread implements Runnable {
 			humanLogger.log(response.getLogString());
 			// Retornamos la respuesta.
 			try {
-				final boolean respKeepAlive = this.keepAlive(response);
+				boolean respKeepAlive = this.keepAlive(response);
+				System.out.println("resp: " + respKeepAlive);
+//				respKeepAlive = true;
 				this.setHeaders(response, request);
 				this.sendResponse(response);
 				if (this.hostConnections != null) {
@@ -153,11 +155,10 @@ public class ResolverThread implements Runnable {
 
 	private boolean keepAlive(final HttpResponseImpl response) {
 		boolean keepAlive;
-
-		keepAlive = "keep-alive".equals(response.getHeader("Connection"));
+		keepAlive = response.getHeader("Connection")==null?false:"keep-alive".compareToIgnoreCase(response.getHeader("Connection"))==0;
 
 		keepAlive &= response.getProtocol().equals("HTTP/1.1");
-
+		System.out.println("keep vale: " + keepAlive);
 		return keepAlive;
 	}
 

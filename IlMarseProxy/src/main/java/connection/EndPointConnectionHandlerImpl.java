@@ -4,13 +4,14 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import application.DinamicProxyConfiguration;
-import application.Statistics;
 
 public class EndPointConnectionHandlerImpl implements EndPointConnectionHandler {
 
 	InetSocketAddress sockAddress;
+	AtomicInteger con = new AtomicInteger();
 	private BlockingQueue<Connection> connections;
 	private DinamicProxyConfiguration configuration = DinamicProxyConfiguration
 			.getInstance();
@@ -36,8 +37,8 @@ public class EndPointConnectionHandlerImpl implements EndPointConnectionHandler 
 		} else {
 			connection = new ConnectionImpl(this.sockAddress);
 		}
+		System.out.println(sockAddress + ": " + con.incrementAndGet());
 		System.out.println("Connexion: " + connection);
-		Statistics.getInstance().connectionOpened();
 		return connection;
 	}
 
@@ -50,18 +51,19 @@ public class EndPointConnectionHandlerImpl implements EndPointConnectionHandler 
 					this.drop(connection);
 					return;
 				}
+				this.connections.offer(connection);
+				System.err.println("Se ofrece una conexion -------------");
 			} catch (final IOException e) {
 				this.drop(connection);
 			}
-			this.connections.offer(connection);
-		}
-
+		}else{
+		System.out.println("La conexion fue null");}
 	}
 
 	public void drop(final Connection connection) {
 		if (connection != null) {
 			connection.close();
-			Statistics.getInstance().connectionClosed();
+			System.out.println(sockAddress + ": " + con.decrementAndGet());
 			System.out.println("Se cerro una conexion");
 		}
 	}
