@@ -42,35 +42,13 @@ public class FilterHandler implements ConnectionHandler {
 					auth = true;
 				}
 			}
-			// int recvMsgSize = 0;
-			// int totalSize = 0;
-			// while ((recvMsgSize = in.read(receiveBuf, totalSize, BUFSIZE
-			// - totalSize)) != -1) {
-			// totalSize += recvMsgSize;
-			// }
-			// response = parse(new String(receiveBuf));
-			// System.out.println("asd");
-			// out.write(response.getBytes("UTF-16LE"), 0,
-			// response.getBytes("UTF-16LE").length);
-			//
 		} while (!response.equals("BYE!") && !auth);
 		// Receive until client closes connection
 		do {
 			response = this.parse(fromClient.readLine());
 			toClient.println(response);
-			// int recvMsgSize = 0;
-			// int totalSize = 0;
-			// while ((recvMsgSize = in.read(receiveBuf, totalSize, BUFSIZE
-			// - totalSize)) != -1) {
-			// totalSize += recvMsgSize;
-			// }
-			// response = parse(new String(receiveBuf));
-			// System.out.println("asd");
-			// out.write(response.getBytes("UTF-16LE"), 0,
-			// response.getBytes("UTF-16LE").length);
-			//
 		} while (!response.equals("BYE!"));
-		s.close(); // Close the socket. We are done with this client!
+		s.close();
 	}
 
 	private String parse(final String request) {
