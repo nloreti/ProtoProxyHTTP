@@ -71,14 +71,14 @@ public class ResolverThread implements Runnable {
 				return;
 			}
 
-			fullLogger.log("Request: " + request + "\n\n\n\n\n");
-			fullLogger.log("Response: " + response);
-			humanLogger.log(request.getLogString());
-			humanLogger.log(response.getLogString());
+//			fullLogger.log("Request: " + request + "\n\n\n\n\n");
+//			fullLogger.log("Response: " + response);
+//			humanLogger.log(request.getLogString());
+//			humanLogger.log(response.getLogString());
 			// Retornamos la respuesta.
 			try {
 				boolean respKeepAlive = this.keepAlive(response);
-				System.out.println("resp: " + respKeepAlive);
+//				System.out.println("resp: " + respKeepAlive);
 //				respKeepAlive = true;
 				this.setHeaders(response, request);
 				this.sendResponse(response);
@@ -159,7 +159,6 @@ public class ResolverThread implements Runnable {
 		keepAlive = response.getHeader("Connection")==null?false:"keep-alive".compareToIgnoreCase(response.getHeader("Connection"))==0;
 
 		keepAlive &= response.getProtocol().equals("HTTP/1.1");
-		System.out.println("keep vale: " + keepAlive);
 		return keepAlive;
 	}
 

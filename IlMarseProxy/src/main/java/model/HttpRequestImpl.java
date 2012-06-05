@@ -65,7 +65,7 @@ public class HttpRequestImpl extends HttpMsg {
 	@Override
 	void parseFirstLine(final String[] line) {
 		if (line.length != 3) {
-			System.out.println("Problema el leer la request-line." + line);
+//			System.out.println("Problema el leer la request-line." + line);
 		}
 
 		this.method = ImplementedMethod.getMethod(line[0]);

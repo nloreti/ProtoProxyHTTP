@@ -58,8 +58,8 @@ public class EndPointConnectionHandlerImpl implements EndPointConnectionHandler 
 			connection = new ConnectionImpl(this.sockAddress);
 		}
 		lastModified = System.currentTimeMillis();
-		System.out.println(sockAddress + ": " + con.incrementAndGet());
-		System.out.println("Connexion: " + connection);
+//		System.out.println(sockAddress + ": " + con.incrementAndGet());
+//		System.out.println("Connexion: " + connection);
 		return connection;
 	}
 
@@ -74,19 +74,20 @@ public class EndPointConnectionHandlerImpl implements EndPointConnectionHandler 
 				}
 				lastModified = System.currentTimeMillis();
 				this.connections.offer(connection);
-				System.err.println("Se ofrece una conexion -------------");
+//				System.err.println("Se ofrece una conexion -------------");
 			} catch (final IOException e) {
 				this.drop(connection);
 			}
 		}else{
-		System.out.println("La conexion fue null");}
+//		System.out.println("La conexion fue null");
+		}
 	}
 
 	public void drop(final Connection connection) {
 		if (connection != null) {
 			connection.close();
-			System.out.println(sockAddress + ": " + con.decrementAndGet());
-			System.out.println("Se cerro una conexion");
+//			System.out.println(sockAddress + ": " + con.decrementAndGet());
+//			System.out.println("Se cerro una conexion");
 		}
 	}
 
