@@ -7,14 +7,21 @@ import java.net.Socket;
 
 public class FilterSocketServer implements Runnable {
 
+	/**
+	 * @uml.property  name="handler"
+	 * @uml.associationEnd  multiplicity="(1 1)"
+	 */
 	ConnectionHandler handler;
+	/**
+	 * @uml.property  name="server"
+	 */
 	ServerSocket server;
 
 	public FilterSocketServer(final int port, final InetAddress interfaz,
 			final ConnectionHandler handler) throws IOException {
 		server = new ServerSocket(port, 50, interfaz);
 		this.handler = handler;
-		System.out.printf("Configuraci—n de filtro escuchando en %s\n",
+		System.out.printf("Configuraciï¿½n de filtro escuchando en %s\n",
 				server.getLocalSocketAddress());
 	}
 

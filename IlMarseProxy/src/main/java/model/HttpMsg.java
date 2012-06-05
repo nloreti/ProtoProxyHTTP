@@ -19,9 +19,6 @@ public abstract class HttpMsg {
 		HTTP_1_0, HTTP_1_1, BAD_REQUEST
 	}
 
-	// private Map<String,String> headers = new HashMap<String, String>();
-	// final InputStream in;
-
 	private Map<String, List<String>> headers;
 	private String protocol;
 	private byte[] body;
@@ -144,8 +141,6 @@ public abstract class HttpMsg {
 		}
 	}
 
-	// Dado un OutputStream tiene que escribir por el mismo su respuesta;
-	// Osea response.writeStream(out) es escribi por el stream out tu respuesta;
 	public abstract void writeStream(OutputStream out) throws ServerException,
 			MessageException;
 

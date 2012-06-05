@@ -10,6 +10,10 @@ import java.net.URISyntaxException;
 
 public class FilterHandler implements ConnectionHandler {
 
+	/**
+	 * @uml.property  name="rf"
+	 * @uml.associationEnd  readOnly="true"
+	 */
 	RequestFilter rf;
 
 	public void handle(final Socket s) throws IOException {

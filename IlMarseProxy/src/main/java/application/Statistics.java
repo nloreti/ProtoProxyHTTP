@@ -13,91 +13,88 @@ public class Statistics {
 	private final AtomicInteger sizeBlocks;
 	private final AtomicInteger transformations;
 	private final AtomicInteger openConnections;
-	
-	
-	
-	public static Statistics getInstance(){
-		return inst = inst==null?new Statistics():inst;
+
+	public static Statistics getInstance() {
+		return inst = inst == null ? new Statistics() : inst;
 	}
-	
+
 	private Statistics() {
-		proxyClientBytes = new AtomicInteger();
-		proxyServerBytes = new AtomicInteger();
-		siteBlocks = new AtomicInteger();
-		ipBlocks = new AtomicInteger();
-		contentBlocks = new AtomicInteger();
-		sizeBlocks = new AtomicInteger();
-		transformations = new AtomicInteger();
-		openConnections = new AtomicInteger();
+		this.proxyClientBytes = new AtomicInteger();
+		this.proxyServerBytes = new AtomicInteger();
+		this.siteBlocks = new AtomicInteger();
+		this.ipBlocks = new AtomicInteger();
+		this.contentBlocks = new AtomicInteger();
+		this.sizeBlocks = new AtomicInteger();
+		this.transformations = new AtomicInteger();
+		this.openConnections = new AtomicInteger();
 	}
-	
-	public void incrementProxyClientBytes(int b){
-		proxyClientBytes.addAndGet(b);
-	} 
-	
-	public void incrementProxyServerBytes(int b){
-		proxyServerBytes.addAndGet(b);
-	} 
-	
-	public void incrementSiteBlocks(){
-		siteBlocks.incrementAndGet();
+
+	public void incrementProxyClientBytes(final int b) {
+		this.proxyClientBytes.addAndGet(b);
 	}
-	
-	public void incrementIpBlocks(){
-		ipBlocks.incrementAndGet();
+
+	public void incrementProxyServerBytes(final int b) {
+		this.proxyServerBytes.addAndGet(b);
 	}
-	
-	public void incrementSizeBlocks(){
-		sizeBlocks.incrementAndGet();
+
+	public void incrementSiteBlocks() {
+		this.siteBlocks.incrementAndGet();
 	}
-	
-	public void incrementContentBlocks(){
-		contentBlocks.incrementAndGet();
+
+	public void incrementIpBlocks() {
+		this.ipBlocks.incrementAndGet();
 	}
-	
-	public void incrementTransformations(){
-		transformations.incrementAndGet();
+
+	public void incrementSizeBlocks() {
+		this.sizeBlocks.incrementAndGet();
 	}
-	
-	public void connectionOpened(){
-		openConnections.incrementAndGet();
+
+	public void incrementContentBlocks() {
+		this.contentBlocks.incrementAndGet();
 	}
-	
-	public void connectionClosed(){
-		openConnections.decrementAndGet();
+
+	public void incrementTransformations() {
+		this.transformations.incrementAndGet();
+	}
+
+	public void connectionOpened() {
+		this.openConnections.incrementAndGet();
+	}
+
+	public void connectionClosed() {
+		this.openConnections.decrementAndGet();
 	}
 
 	public int getProxyClientBytes() {
-		return proxyClientBytes.intValue();
+		return this.proxyClientBytes.intValue();
 	}
 
 	public int getProxyServerBytes() {
-		return proxyServerBytes.intValue();
+		return this.proxyServerBytes.intValue();
 	}
 
 	public int getSiteBlocks() {
-		return siteBlocks.intValue();
+		return this.siteBlocks.intValue();
 	}
-	
+
 	public int getIpBlocks() {
-		return ipBlocks.intValue();
+		return this.ipBlocks.intValue();
 	}
-	
+
 	public int getContentBlocks() {
-		return contentBlocks.intValue();
+		return this.contentBlocks.intValue();
 	}
-	
+
 	public int getSizeBlocks() {
-		return sizeBlocks.intValue();
+		return this.sizeBlocks.intValue();
 	}
 
 	public int getTransformations() {
-		return transformations.intValue();
+		return this.transformations.intValue();
 	}
 
 	public int getOpenConnections() {
-		return openConnections.intValue();
+		return this.openConnections.intValue();
 	}
-	
-	
+
 }

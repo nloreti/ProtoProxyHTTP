@@ -13,6 +13,10 @@ import org.xml.sax.SAXParseException;
 public class DinamicProxyConfiguration implements ProxyConfiguration {
 
 	static DinamicProxyConfiguration proxyInstance;
+	/**
+	 * @uml.property name="configuration"
+	 * @uml.associationEnd multiplicity="(1 1)"
+	 */
 	DinamicConfiguration configuration;
 	private static String path = "configuration/configuration.xml";
 
@@ -55,22 +59,6 @@ public class DinamicProxyConfiguration implements ProxyConfiguration {
 		}
 
 		return dinamicConfiguration;
-
-		// JAXBContext context;
-		// DinamicConfiguration configuration;
-		//
-		// try {
-		//
-		// context = JAXBContext.newInstance("application");
-		// final Unmarshaller unmarshaller = context.createUnmarshaller();
-		// configuration = (DinamicConfiguration) unmarshaller
-		// .unmarshal(new File(path));
-		//
-		// } catch (final JAXBException e) {
-		// e.printStackTrace();
-		// configuration = null;
-		// }
-		// return configuration;
 	}
 
 	public int getProxyPort() {
@@ -141,7 +129,6 @@ public class DinamicProxyConfiguration implements ProxyConfiguration {
 	}
 
 	public void setTimeOutToClient(final int timeOutClient) {
-		// TODO Auto-generated method stub
 		this.configuration.settimeOutClient(timeOutClient);
 	}
 
@@ -151,7 +138,6 @@ public class DinamicProxyConfiguration implements ProxyConfiguration {
 	}
 
 	public void setTimeOutToServer(final int timeOutServer) {
-		// TODO Auto-generated method stub
 		this.configuration.settimeOutServer(timeOutServer);
 	}
 
@@ -160,7 +146,6 @@ public class DinamicProxyConfiguration implements ProxyConfiguration {
 	}
 
 	public void setProxyBackLog(final int backlog) {
-		// TODO Auto-generated method stub
 		this.configuration.setProxyBackLog(backlog);
 	}
 
@@ -175,23 +160,26 @@ public class DinamicProxyConfiguration implements ProxyConfiguration {
 	}
 
 	public int getFilterPort() {
-		// TODO Auto-generated method stub
-		return 0;
+		return this.configuration.getFilterPort();
 	}
 
 	public void setFilterPort(final int port) {
-		// TODO Auto-generated method stub
-
+		this.configuration.setFilterPort(port);
 	}
 
 	public int getFilterBackLog() {
-		// TODO Auto-generated method stub
-		return 0;
+		return this.configuration.getFilterLog();
 	}
 
 	public void setFilterBackLog(final int backlog) {
-		// TODO Auto-generated method stub
-
+		this.configuration.setFilterLog(backlog);
 	}
 
+	public String getUsername() {
+		return this.configuration.getUsername();
+	}
+
+	public String getPassword() {
+		return this.configuration.getPassword();
+	}
 }
