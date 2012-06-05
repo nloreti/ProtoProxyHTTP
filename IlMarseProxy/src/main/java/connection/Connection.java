@@ -15,7 +15,8 @@ public interface Connection {
 
 	public void send(HttpResponseImpl response);
 
-	public HttpResponseImpl receive() throws ResponseException, ServerException, EncodingException;
+	public HttpResponseImpl receive() throws ResponseException,
+			ServerException, EncodingException;
 
 	public InputStream getInputStream();
 

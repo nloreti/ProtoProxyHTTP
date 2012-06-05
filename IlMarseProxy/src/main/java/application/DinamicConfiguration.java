@@ -6,19 +6,22 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class DinamicConfiguration {
-	protected Integer maxThreads;
-	protected Integer minThreads;
-	protected Integer inicialThreads;
-	protected boolean hasProxy;
-	protected String chainProxyIp;
-	protected Integer chainProxyPort;
-	protected Integer filterPort;
-	protected Integer proxyPort;
-	protected Integer maxServersPerConnection;
-	protected Integer timeOutClient;
-	protected Integer timeOutServer;
-	protected Integer proxyBackLog;
-	protected Integer filterLog;
+
+	private Integer maxThreads;
+	private Integer minThreads;
+	private Integer inicialThreads;
+	private boolean hasProxy;
+	private String chainProxyIp;
+	private Integer chainProxyPort;
+	private Integer filterPort;
+	private Integer proxyPort;
+	private Integer maxServersPerConnection;
+	private Integer timeOutClient;
+	private Integer timeOutServer;
+	private Integer proxyBackLog;
+	private Integer filterLog;
+	private String username;
+	private String password;
 
 	public DinamicConfiguration() {
 	}
@@ -89,6 +92,12 @@ public class DinamicConfiguration {
 					if (elemento.getNodeName().equals("timeOutServer")) {
 						this.timeOutServer = Integer.valueOf(elemento
 								.getAttribute("value"));
+					}
+					if (elemento.getNodeName().equals("username")) {
+						this.username = elemento.getAttribute("value");
+					}
+					if (elemento.getNodeName().equals("password")) {
+						this.password = elemento.getAttribute("value");
 					}
 					if (elemento.getNodeName().equals("hasProxy")) {
 						final String value = elemento.getAttribute("value");
@@ -225,6 +234,22 @@ public class DinamicConfiguration {
 
 	public void setFilterLog(final Integer filterLog) {
 		this.filterLog = filterLog;
+	}
+
+	public String getUsername() {
+		return this.username;
+	}
+
+	public void setUsername(final String username) {
+		this.username = username;
+	}
+
+	public String getPassword() {
+		return this.password;
+	}
+
+	public void setPassword(final String password) {
+		this.password = password;
 	}
 
 }

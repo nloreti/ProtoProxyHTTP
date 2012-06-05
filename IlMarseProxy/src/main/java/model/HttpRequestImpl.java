@@ -14,6 +14,9 @@ import exceptions.ResponseException;
 
 public class HttpRequestImpl extends HttpMsg {
 
+	/**
+	 * @author Nloreti
+	 */
 	public enum ImplementedMethod {
 		GET, HEAD, POST;
 
@@ -210,7 +213,8 @@ public class HttpRequestImpl extends HttpMsg {
 		return null;
 	}
 
-	public String getLogString(){
-		return "to: " + getRequestURI() + "\nheaders: " + getHeaders().toString();
+	public String getLogString() {
+		return "to: " + this.getRequestURI() + "\nheaders: "
+				+ this.getHeaders().toString();
 	}
 }

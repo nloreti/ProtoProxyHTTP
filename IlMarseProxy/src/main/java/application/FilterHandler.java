@@ -10,10 +10,17 @@ import java.net.URISyntaxException;
 
 public class FilterHandler implements ConnectionHandler {
 
+	/**
+	 * @uml.property name="rf"
+	 * @uml.associationEnd readOnly="true"
+	 */
 	RequestFilter rf;
-	private final String user = "TP";
-	private final String pass = "PROTOS";
-	
+	private DinamicProxyConfiguration configuration = DinamicProxyConfiguration
+			.getInstance();
+
+	private String user;
+	private String pass;
+
 	public void handle(final Socket s) throws IOException {
 		// InputStream in = s.getInputStream();
 		// OutputStream out = s.getOutputStream();
@@ -22,46 +29,26 @@ public class FilterHandler implements ConnectionHandler {
 		final PrintWriter toClient = new PrintWriter(s.getOutputStream(), true);
 		// byte[] receiveBuf = new byte[BUFSIZE]; // Receive buffer
 		String response;
+		this.user = this.configuration.getUsername();
+		this.pass = this.configuration.getPassword();
 		boolean auth = false;
-			do {
-				toClient.println("USER:");
+		do {
+			toClient.println("USER:");
+			response = fromClient.readLine();
+			if (response.contains(this.user)) {
+				toClient.println("PASS:");
 				response = fromClient.readLine();
-				if(response.contains(user)){
-					toClient.println("PASS:");
-					response = fromClient.readLine();
-					if(response.contains(pass)){
-						auth=true;
-					}
+				if (response.contains(this.pass)) {
+					auth = true;
 				}
-				// int recvMsgSize = 0;
-				// int totalSize = 0;
-				// while ((recvMsgSize = in.read(receiveBuf, totalSize, BUFSIZE
-				// - totalSize)) != -1) {
-				// totalSize += recvMsgSize;
-				// }
-				// response = parse(new String(receiveBuf));
-				// System.out.println("asd");
-				// out.write(response.getBytes("UTF-16LE"), 0,
-				// response.getBytes("UTF-16LE").length);
-				//
-			} while (!response.equals("BYE!") && !auth);
+			}
+		} while (!response.equals("BYE!") && !auth);
 		// Receive until client closes connection
 		do {
 			response = this.parse(fromClient.readLine());
 			toClient.println(response);
-			// int recvMsgSize = 0;
-			// int totalSize = 0;
-			// while ((recvMsgSize = in.read(receiveBuf, totalSize, BUFSIZE
-			// - totalSize)) != -1) {
-			// totalSize += recvMsgSize;
-			// }
-			// response = parse(new String(receiveBuf));
-			// System.out.println("asd");
-			// out.write(response.getBytes("UTF-16LE"), 0,
-			// response.getBytes("UTF-16LE").length);
-			//
 		} while (!response.equals("BYE!"));
-		s.close(); // Close the socket. We are done with this client!
+		s.close();
 	}
 
 	private String parse(final String request) {
@@ -181,8 +168,14 @@ public class FilterHandler implements ConnectionHandler {
 														// servidor que provea
 														// todo, por eso lo puse
 														// aca.
-			return "TOTAL SITE BLOCKS:" + Statistics.getInstance().getSiteBlocks() + "\r\nTOTAL IP BLOCKS: " + Statistics.getInstance().getIpBlocks() + "\r\nTOTAL" +
-					" MEDIATYPE BLOCKS: " + Statistics.getInstance().getContentBlocks() + "\r\nTOTAL SIZE BLOCKS: " + Statistics.getInstance().getSizeBlocks();
+			return "TOTAL SITE BLOCKS:"
+					+ Statistics.getInstance().getSiteBlocks()
+					+ "\r\nTOTAL IP BLOCKS: "
+					+ Statistics.getInstance().getIpBlocks() + "\r\nTOTAL"
+					+ " MEDIATYPE BLOCKS: "
+					+ Statistics.getInstance().getContentBlocks()
+					+ "\r\nTOTAL SIZE BLOCKS: "
+					+ Statistics.getInstance().getSizeBlocks();
 		} else if (request.startsWith("GET OPEN CONNECTIONS")) {
 			return "TOTAL OPEN CONNECTIONS:"
 					+ Statistics.getInstance().getOpenConnections();

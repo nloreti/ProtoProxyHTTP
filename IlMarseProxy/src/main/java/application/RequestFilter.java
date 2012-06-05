@@ -16,6 +16,8 @@ import javax.ws.rs.core.MediaType;
 
 import model.HttpRequestImpl;
 import model.HttpResponseImpl;
+import exceptions.CloseException;
+import exceptions.ImageException;
 
 public class RequestFilter {
 
@@ -138,7 +140,7 @@ public class RequestFilter {
 			}
 			if (this.images) {
 				if (response.containsType("image/.*")) {
-					System.out.println("ENTRA");
+					System.out.println("ENTRA a las fotos RequestFilter");
 					Statistics.getInstance().incrementTransformations();
 					this.rotateImage(response);
 				}
@@ -230,13 +232,14 @@ public class RequestFilter {
 					String.valueOf(imageBytes.length));
 			response.removeHeader("Content-Encoding");
 			response.setBody(imageBytes);
-		} catch (final Exception e) {
-			e.printStackTrace();
+		} catch (final ImageException e) {
+			throw new CloseException(e.getMessage());
 		}
 
 	}
 
-	private byte[] rotateBytes(final byte[] rawImageBytes, final String format) {
+	private byte[] rotateBytes(final byte[] rawImageBytes, final String format)
+			throws ImageException {
 		int width;
 		int height;
 		final double radians = Math.PI;// 180 grados
@@ -248,7 +251,7 @@ public class RequestFilter {
 			oldImage = ImageIO.read(new ByteArrayInputStream(rawImageBytes));
 
 		} catch (final IOException e) {
-			e.printStackTrace();
+			throw new ImageException("Error en la imagen");
 		}
 
 		width = oldImage.getWidth();
@@ -330,17 +333,8 @@ public class RequestFilter {
 					String.valueOf(body.length()));
 			response.removeHeader("Content-Encoding");
 			response.setBody(body.getBytes());
-
-			// if (response.getHeader("Content-Type") != null) {
-			// response.removeHeader("Content-Type");
-			// }
-			// response.addHeader("Content-Type", "text/html");
-			// System.out.println(new String(response.getBody(), "UTF-8"));
-			System.out.println("ENTRE");
-			// response.setBody(body.getBytes());
 		} catch (final Exception e) {
-			e.printStackTrace();
-
+			throw new CloseException("Bad Blocked Response");
 		}
 		return response;
 	}

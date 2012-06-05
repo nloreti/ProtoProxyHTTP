@@ -2,6 +2,9 @@ package application;
 
 import java.net.InetAddress;
 
+/**
+ * @author  Nloreti
+ */
 public interface ProxyConfiguration {
 
 	public int getProxyPort();
@@ -16,8 +19,15 @@ public interface ProxyConfiguration {
 
 	public void setHasProxy(boolean hasProxy);
 
+	/**
+	 * @uml.property  name="chainProxyIP"
+	 */
 	public InetAddress getChainProxyIP();
 
+	/**
+	 * @param address
+	 * @uml.property  name="chainProxyIP"
+	 */
 	public void setChainProxyIP(InetAddress address);
 
 	public int getChainProxyPort();

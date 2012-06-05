@@ -6,9 +6,17 @@ import java.net.Socket;
 
 public class ProxyHTTP implements Runnable {
 
+	/**
+	 * @uml.property  name="configuration"
+	 * @uml.associationEnd  multiplicity="(1 1)"
+	 */
 	DinamicProxyConfiguration configuration = DinamicProxyConfiguration
 			.getInstance();
 
+	/**
+	 * @uml.property  name="socketHandler"
+	 * @uml.associationEnd  multiplicity="(1 1)"
+	 */
 	SocketHandler socketHandler = new ThreadSocketHandler();
 
 	public ProxyHTTP() {

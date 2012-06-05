@@ -1,5 +1,6 @@
 package model;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,19 +8,20 @@ import java.io.OutputStream;
 import java.rmi.ServerException;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.zip.GZIPInputStream;
 
 import exceptions.ClientException;
+import exceptions.CloseException;
 import exceptions.EncodingException;
 import exceptions.MessageException;
 import exceptions.ResponseException;
 
 public class HttpResponseImpl extends HttpMsg {
 
-	private int statusCode;
-	private String reasonPhrase;
+	private String reason;
 	private String pVersion;
+	private int statusCode;
 	private boolean isBodyCached = false;
-	// private int limit;
 	private boolean contentByClosedConnection = false;
 
 	public HttpResponseImpl(final InputStream in) throws ResponseException,
@@ -43,22 +45,6 @@ public class HttpResponseImpl extends HttpMsg {
 		}
 	}
 
-	public String getProtocolVersion() {
-		return this.pVersion;
-	}
-
-	public String getReasonPhrase() {
-		return this.reasonPhrase;
-	}
-
-	public int getStatusCode() {
-		return this.statusCode;
-	}
-
-	public void setStatusCode(final int code) {
-		this.statusCode = code;
-	}
-
 	@Override
 	void parseFirstLine(final String[] line) {
 
@@ -79,16 +65,12 @@ public class HttpResponseImpl extends HttpMsg {
 		}
 
 		if (line.length == 3) {
-			this.reasonPhrase = (line[2]);
+			this.reason = (line[2]);
 		} else {
-			this.reasonPhrase = "";
+			this.reason = "";
 		}
 
 	}
-
-	// public void setLengthLimit(final Integer limit) {
-	// this.limit = limit;
-	// }
 
 	@Override
 	public byte[] getBody() {
@@ -97,8 +79,7 @@ public class HttpResponseImpl extends HttpMsg {
 			try {
 				this.writeBodyStream(out);
 			} catch (final ServerException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw new CloseException("Server Error in getBody");
 			}
 			super.setBody(out.toByteArray());
 		}
@@ -144,9 +125,8 @@ public class HttpResponseImpl extends HttpMsg {
 
 			for (final Entry<String, List<String>> e : this.getHeaders()
 					.entrySet()) {
-				for (final String headerValue : e.getValue()) {
-					bytes = (e.getKey() + ": " + headerValue + "\r\n")
-							.getBytes();
+				for (final String header : e.getValue()) {
+					bytes = (e.getKey() + ": " + header + "\r\n").getBytes();
 					out.write(bytes);
 				}
 			}
@@ -158,15 +138,13 @@ public class HttpResponseImpl extends HttpMsg {
 				out.write(this.getBody());
 			}
 
-		} catch (final IOException e1) {
-			throw new MessageException("ASD");// TODO Auto-generated catch block
+		} catch (final IOException e) {
+			throw new MessageException("Message Error");
 		}
 	}
 
 	@Override
 	void writeBodyStream(final OutputStream out) throws ServerException {
-
-		// final ByteArrayOutputStream outArray = new ByteArrayOutputStream();
 
 		try {
 			if (this.getHeader("Content-Length") != null) {
@@ -178,85 +156,97 @@ public class HttpResponseImpl extends HttpMsg {
 						System.out.println("Se cerro la conexion del cliente");
 					}
 					this.write(out, c);
-					// outArray.write(c);
 				}
 			} else if (this.contentByClosedConnection) {
 				int c;
 				while ((c = this.read()) != -1) {
 					this.write(out, c);
-					// outArray.write(c);
 				}
 			} else if ("chunked".equals(this.getHeader("Transfer-Encoding"))) {
-				// System.out.println("CAYO EN CHUNKED!");
+				// System.out.println("CAYO EN CHUNKED - IMPLEMENTAR!");
 				byte[] bytes;
-				String stringChunkLength = null;
-				while (!(stringChunkLength = this.readLine()).matches("0+")) {
-					bytes = stringChunkLength.getBytes();
+				String stringChunk = null;
+				final String CRLF = "\r\n";
+				final int radix = 16;
+				int chunkLength;
+				while (!(stringChunk = this.readLine()).matches("0+")) {
+					bytes = stringChunk.getBytes();
 					this.write(out, bytes);
-					// transferred = bytes.length;
-					this.write(out, "\r\n".getBytes());
-					// this.validateLimit(transferred += 2);
-
-					int chunkLength;
+					this.write(out, CRLF.getBytes());
 					try {
-						chunkLength = Integer.parseInt(stringChunkLength, 16);
+						chunkLength = Integer.parseInt(stringChunk, radix);
 					} catch (final NumberFormatException e) {
 						throw new ResponseException();
 					}
 
-					// this.validateLimit(transferred += chunkLength);
 					while (--chunkLength >= 0) {
 						final int c = this.read();
 						if (c == -1) {
-							throw new ServerException("Fallo el server");
+							throw new ServerException("Fallo del server");
 						}
 						this.write(out, c);
 					}
-
 					this.readLine();
-					this.write(out, "\r\n".getBytes());
-					// this.validateLimit(transferred += 2);
+					this.write(out, CRLF.getBytes());
 				}
 				this.write(out, '0');
-				// this.validateLimit(transferred += 1);
-				this.write(out, "\r\n".getBytes());
-				// this.validateLimit(transferred += 2);
-
+				this.write(out, CRLF.getBytes());
 				this.readLine();
-				this.write(out, "\r\n".getBytes());
-				// this.validateLimit(transferred += 2);
+				this.write(out, CRLF.getBytes());
 
 			}
-			// if (!this.completed) {
-			// this.setBody(outArray.toByteArray());
-			// }
 			this.isBodyCached = true;
-		} catch (EncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (final EncodingException e) {
+			throw new CloseException("Error de Encoding");
 		}
 
+	}
+
+	public byte[] getBodyBytes() {
+
+		byte[] data = this.getBody();
+		GZIPInputStream isZipped;
+		final ByteArrayOutputStream unZipped = new ByteArrayOutputStream();
+
+		if (data == null) {
+			return null;
+		}
+
+		try {
+			if ("gzip".equals(this.getHeader("Content-Encoding"))) {
+				isZipped = new GZIPInputStream(new ByteArrayInputStream(data));
+				int b;
+				while ((b = isZipped.read()) != -1) {
+					unZipped.write(b);
+				}
+				data = unZipped.toByteArray();
+			}
+		} catch (final IOException e) {
+			throw new ResponseException();
+		}
+		return data;
+	}
+
+	public String getProtocolVersion() {
+		return this.pVersion;
+	}
+
+	public String getReasonPhrase() {
+		return this.reason;
+	}
+
+	public int getStatusCode() {
+		return this.statusCode;
+	}
+
+	public void setStatusCode(final int code) {
+		this.statusCode = code;
 	}
 
 	@Override
 	String getHost() {
 		return this.getHeader("Host");
 
-	}
-
-	@Override
-	public String toString() {
-		final StringBuffer b = new StringBuffer();
-
-		b.append(this.getProtocol() + " " + this.getStatusCode() + " "
-				+ this.getReasonPhrase() + "\r\n");
-		for (final Entry<String, List<String>> e : this.getHeaders().entrySet()) {
-			for (final String headerValue : e.getValue()) {
-				b.append(e.getKey() + ": " + headerValue + "\r\n");
-			}
-		}
-		b.append("\r\n");
-		return b.toString();
 	}
 
 	public String getContentLength() {
@@ -275,4 +265,20 @@ public class HttpResponseImpl extends HttpMsg {
 	public String getLogString() {
 		return String.valueOf(this.getStatusCode());
 	}
+
+	@Override
+	public String toString() {
+		final StringBuffer b = new StringBuffer();
+
+		b.append(this.getProtocol() + " " + this.getStatusCode() + " "
+				+ this.getReasonPhrase() + "\r\n");
+		for (final Entry<String, List<String>> e : this.getHeaders().entrySet()) {
+			for (final String headerValue : e.getValue()) {
+				b.append(e.getKey() + ": " + headerValue + "\r\n");
+			}
+		}
+		b.append("\r\n");
+		return b.toString();
+	}
+
 }

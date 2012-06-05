@@ -10,4 +10,6 @@
 	<maxServersPerConnection value="100"/>
 	<timeOutClient value="10000"/>
 	<timeOutServer value="10000"/>
+	<username value="admin"/>
+	<password value="admin"/>
 </configuration>

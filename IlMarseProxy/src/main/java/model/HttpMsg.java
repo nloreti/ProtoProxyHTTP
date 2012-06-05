@@ -11,8 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import application.Statistics;
-
 import exceptions.EncodingException;
 import exceptions.MessageException;
 
@@ -140,15 +138,13 @@ public abstract class HttpMsg {
 	public int read() throws ServerException {
 		try {
 			// System.out.println("READ: " + this.in.toString());
-			read++;
+			this.read++;
 			return this.in.read();
 		} catch (final IOException e) {
 			throw new ServerException("Connection Problem");
 		}
 	}
 
-	// Dado un OutputStream tiene que escribir por el mismo su respuesta;
-	// Osea response.writeStream(out) es escribi por el stream out tu respuesta;
 	public abstract void writeStream(OutputStream out) throws ServerException,
 			MessageException;
 
@@ -157,12 +153,12 @@ public abstract class HttpMsg {
 	abstract String getHost();
 
 	abstract void parseFirstLine(String[] line);
-	
-	public int getRead(){
-		return read;
+
+	public int getRead() {
+		return this.read;
 	}
-	
-	public int getWritten(){
-		return written;
+
+	public int getWritten() {
+		return this.written;
 	}
 }

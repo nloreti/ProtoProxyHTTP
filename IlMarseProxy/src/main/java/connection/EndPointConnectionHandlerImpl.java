@@ -11,8 +11,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import application.DinamicProxyConfiguration;
 
 public class EndPointConnectionHandlerImpl implements EndPointConnectionHandler {
-	private final int idleConnectionTimeMs=3000;
-	private long lastModified; 
+	private final int idleConnectionTimeMs;
+	private long lastModified;
 	private Timer timer = new Timer();
 	InetSocketAddress sockAddress;
 	AtomicInteger con = new AtomicInteger();
@@ -22,15 +22,20 @@ public class EndPointConnectionHandlerImpl implements EndPointConnectionHandler 
 
 	public EndPointConnectionHandlerImpl(final InetSocketAddress sockAddress) {
 		this.sockAddress = sockAddress;
+		this.idleConnectionTimeMs = this.configuration.getTimeOutToServer();
 		this.connections = new LinkedBlockingQueue<Connection>();
-		lastModified = System.currentTimeMillis();
+		this.lastModified = System.currentTimeMillis();
 		final TimerTask task = new TimerTask() {
 			@Override
 			public synchronized void run() {
-				if(lastModified + idleConnectionTimeMs < System.currentTimeMillis()){
-					if(!connections.isEmpty()){
-						Connection c = connections.poll();
-						if(!c.isClosed()){
+				if (EndPointConnectionHandlerImpl.this.lastModified
+						+ EndPointConnectionHandlerImpl.this.idleConnectionTimeMs < System
+						.currentTimeMillis()) {
+					if (!EndPointConnectionHandlerImpl.this.connections
+							.isEmpty()) {
+						final Connection c = EndPointConnectionHandlerImpl.this.connections
+								.poll();
+						if (!c.isClosed()) {
 							c.close();
 						}
 					}
@@ -42,7 +47,7 @@ public class EndPointConnectionHandlerImpl implements EndPointConnectionHandler 
 	}
 
 	public synchronized Connection getConnection() {
-		
+
 		if (!this.connections.isEmpty()) {
 			System.out.println("se reuso una conexion");
 			return this.connections.poll();
@@ -57,9 +62,11 @@ public class EndPointConnectionHandlerImpl implements EndPointConnectionHandler 
 		} else {
 			connection = new ConnectionImpl(this.sockAddress);
 		}
+
 		lastModified = System.currentTimeMillis();
 //		System.out.println(sockAddress + ": " + con.incrementAndGet());
 //		System.out.println("Connexion: " + connection);
+
 		return connection;
 	}
 
@@ -72,22 +79,26 @@ public class EndPointConnectionHandlerImpl implements EndPointConnectionHandler 
 					this.drop(connection);
 					return;
 				}
-				lastModified = System.currentTimeMillis();
+				this.lastModified = System.currentTimeMillis();
 				this.connections.offer(connection);
 //				System.err.println("Se ofrece una conexion -------------");
 			} catch (final IOException e) {
 				this.drop(connection);
 			}
+
 		}else{
 //		System.out.println("La conexion fue null");
+
 		}
 	}
 
 	public void drop(final Connection connection) {
 		if (connection != null) {
 			connection.close();
+
 //			System.out.println(sockAddress + ": " + con.decrementAndGet());
 //			System.out.println("Se cerro una conexion");
+
 		}
 	}
 
