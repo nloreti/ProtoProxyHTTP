@@ -7,37 +7,36 @@ import java.net.Socket;
 
 public class FilterSocketServer implements Runnable {
 
-	/**
-	 * @uml.property  name="handler"
-	 * @uml.associationEnd  multiplicity="(1 1)"
-	 */
 	ConnectionHandler handler;
-	/**
-	 * @uml.property  name="server"
-	 */
 	ServerSocket server;
+	private DinamicProxyConfiguration configuration = DinamicProxyConfiguration
+			.getInstance();
 
-	public FilterSocketServer(final int port, final InetAddress interfaz,
+	public FilterSocketServer(final InetAddress interfaz,
 			final ConnectionHandler handler) throws IOException {
-		server = new ServerSocket(port, 50, interfaz);
+
+		final int port = this.configuration.getFilterPort();
+		final int backlog = this.configuration.getFilterBackLog();
+
+		this.server = new ServerSocket(port, backlog, interfaz);
 		this.handler = handler;
-		System.out.printf("Configuraci�n de filtro escuchando en %s\n",
-				server.getLocalSocketAddress());
+		System.out.printf("Configuracion de filtro escuchando en %s\n",
+				this.server.getLocalSocketAddress());
 	}
 
 	public void run() {
 		try {
 			while (true) {
-				final Socket socket = server.accept();
-				String s = socket.getRemoteSocketAddress().toString();
+				final Socket socket = this.server.accept();
+				final String s = socket.getRemoteSocketAddress().toString();
 				System.out.printf("Se conecto %s\n", s);
-				handler.handle(socket);
+				this.handler.handle(socket);
 				if (!socket.isClosed()) {
 					socket.close();
 					System.out.printf("Terminando %s\n", s);
 				}
 			}
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			e.printStackTrace();
 		}
 	}
