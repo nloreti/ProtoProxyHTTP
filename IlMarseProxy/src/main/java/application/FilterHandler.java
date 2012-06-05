@@ -8,7 +8,6 @@ import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import nl.bitwalker.useragentutils.UserAgent;
 
 public class FilterHandler implements ConnectionHandler {
 
@@ -107,30 +106,6 @@ public class FilterHandler implements ConnectionHandler {
 				return ip + " NOT BLOCKED";
 			}
 			return ip + " UNLOCKED";
-		} else if (request.startsWith("BLOCK BROWSER ")) {
-			final UserAgent ua = new UserAgent(request.substring(14));
-			if (!rf.blockBrowser(ua.getBrowser())) {
-				return "BROWSER ALREADY BLOCKED";
-			}
-			return "BLOCKED";
-		} else if (request.startsWith("UNLOCK BROWSER ")) {
-			final UserAgent ua = new UserAgent(request.substring(15));
-			if (!rf.unlockBrowser(ua.getBrowser())) {
-				return "BROWSER ISNT BLOCKED";
-			}
-			return "UNLOCKED";
-		} else if (request.startsWith("BLOCK OS ")) {
-			final UserAgent ua = new UserAgent(request.substring(9));
-			if (!rf.blockOs(ua.getOperatingSystem())) {
-				return "OS ALREADY BLOCKED";
-			}
-			return "BLOCKED";
-		} else if (request.startsWith("UNLOCK OS ")) {
-			final UserAgent ua = new UserAgent(request.substring(10));
-			if (!rf.unlockOs(ua.getOperatingSystem())) {
-				return "OS ISNT BLOCKED";
-			}
-			return "UNLOCKED";
 		} else if (request.startsWith("BLOCK URI ")) {
 			final String uri = request.substring(10);
 			// urivalidator!
