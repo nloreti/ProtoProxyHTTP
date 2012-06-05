@@ -7,8 +7,7 @@ public class Start {
 	public static void main(final String[] args) {
 		try {
 			final FilterSocketServer filterServer = new FilterSocketServer(
-					9001, InetAddress.getByName("localhost"),
-					new FilterHandler());
+					InetAddress.getByName("localhost"), new FilterHandler());
 
 			new Thread(filterServer).start();
 			final ProxyHTTP proxy = new ProxyHTTP();

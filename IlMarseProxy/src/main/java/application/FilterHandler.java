@@ -10,10 +10,6 @@ import java.net.URISyntaxException;
 
 public class FilterHandler implements ConnectionHandler {
 
-	/**
-	 * @uml.property name="rf"
-	 * @uml.associationEnd readOnly="true"
-	 */
 	RequestFilter rf;
 	private DinamicProxyConfiguration configuration = DinamicProxyConfiguration
 			.getInstance();
