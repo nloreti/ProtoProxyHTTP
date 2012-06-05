@@ -10,12 +10,16 @@ import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.ws.rs.core.MediaType;
 
 import model.HttpRequestImpl;
 import model.HttpResponseImpl;
+import nl.bitwalker.useragentutils.Browser;
+import nl.bitwalker.useragentutils.OperatingSystem;
+import nl.bitwalker.useragentutils.UserAgent;
 import exceptions.CloseException;
 import exceptions.ImageException;
 
@@ -29,6 +33,8 @@ public class RequestFilter {
 	private List<URI> uris;
 	private List<MediaType> mediaTypes;
 	private int maxSize;
+	private Set<Browser> browsers;
+	private Set<OperatingSystem> oss;
 
 	public static RequestFilter getInstance() {
 		if (instance == null) {
@@ -164,7 +170,10 @@ public class RequestFilter {
 					return this.generateBlockedResponse(this.maxSize, response);
 				}
 			}
-
+			UserAgent ua = getUserAgent(request);
+			if( browserBlocked(ua.getBrowser()) || operatingSystemBlocked(ua.getOperatingSystem()) ){
+				return this.generateBlockedResponseByUserAgent(response);
+			}
 			if (this.isMediaTypeBlockable(response)) {
 				Statistics.getInstance().incrementContentBlocks();
 				return this.generateBlockedResponseByMediaType(response);
@@ -173,6 +182,24 @@ public class RequestFilter {
 			e.printStackTrace();
 		}
 		return response;
+	}
+
+	private HttpResponseImpl generateBlockedResponseByUserAgent(
+			HttpResponseImpl response) {
+		return generateBlockedResponse(
+				"The user agent is blocked", response);
+	}
+
+	private boolean operatingSystemBlocked(OperatingSystem operatingSystem) {
+		return oss.contains(operatingSystem);
+	}
+
+	private boolean browserBlocked(Browser browser) {
+		return browsers.contains(browser);
+	}
+
+	private UserAgent getUserAgent(HttpRequestImpl request) {
+		return new UserAgent(request.getHeader("User-Agent"));
 	}
 
 	private boolean isMediaTypeBlockable(final HttpResponseImpl response) {
@@ -337,5 +364,21 @@ public class RequestFilter {
 			throw new CloseException("Bad Blocked Response");
 		}
 		return response;
+	}
+
+	public boolean blockBrowser(Browser browser) {
+		return browsers.add(browser);
+	}
+
+	public boolean unlockBrowser(Browser browser) {
+		return browsers.remove(browser);
+	}
+
+	public boolean blockOs(OperatingSystem operatingSystem) {
+		return oss.add(operatingSystem);
+	}
+
+	public boolean unlockOs(OperatingSystem operatingSystem) {
+		return oss.remove(operatingSystem);
 	}
 }
