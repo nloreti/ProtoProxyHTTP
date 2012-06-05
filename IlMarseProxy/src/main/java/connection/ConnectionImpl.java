@@ -53,7 +53,7 @@ public class ConnectionImpl implements Connection {
 		try {
 			this.socket = new Socket(ip, port);
 			this.socket.setSoTimeout(this.configuration.getTimeOutToServer());
-			Statistics.getInstance().connectionOpened();
+//			Statistics.getInstance().connectionOpened();
 		} catch (final SocketException e) {
 			e.printStackTrace();
 		} catch (final IOException e) {
