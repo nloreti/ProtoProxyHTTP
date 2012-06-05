@@ -9,7 +9,6 @@ import model.HttpRequestImpl;
 import model.HttpResponseImpl;
 
 import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
 
 import connection.CollectionConnectionHandler;
 import connection.CollectionConnectionHandlerImpl;
@@ -25,46 +24,23 @@ import exceptions.ServerTimeOutException;
 public class ResolverThread implements Runnable {
 
 	// Conexion con el Cliente
-	/**
-	 * @uml.property  name="client"
-	 * @uml.associationEnd  multiplicity="(1 1)"
-	 */
 	Connection client;
 	// Conexion con el Servidor
-	/**
-	 * @uml.property  name="server"
-	 * @uml.associationEnd  
-	 */
 	Connection server;
 	// Conexion con el Host
-	/**
-	 * @uml.property  name="hostConnections"
-	 * @uml.associationEnd  
-	 */
 	volatile EndPointConnectionHandler hostConnections;
 	// Para conexiones persistentes
-	/**
-	 * @uml.property  name="proxyKeepAlive"
-	 */
 	boolean proxyKeepAlive = true;
 	// Logger
-	static final Logger logger = Logger.getLogger(ResolverThread.class);
+	// static final Logger logger = Logger.getLogger(ResolverThread.class);
 	// Se usa para el Max-Fowards para el Proxy Chain
 	private static Integer MAX_FORWARDS = 5;
 
 	// Configuracion del proxy
-	/**
-	 * @uml.property  name="configuration"
-	 * @uml.associationEnd  multiplicity="(1 1)"
-	 */
 	private ProxyConfiguration configuration = DinamicProxyConfiguration
 			.getInstance();
 
 	// Configuracion de las conexiones
-	/**
-	 * @uml.property  name="connections"
-	 * @uml.associationEnd  multiplicity="(1 1)"
-	 */
 	private CollectionConnectionHandler connections = CollectionConnectionHandlerImpl
 			.getInstance();
 
@@ -76,6 +52,9 @@ public class ResolverThread implements Runnable {
 		HttpRequestImpl request = null;
 		HttpResponseImpl response = null;
 		BasicConfigurator.configure();
+
+		// final FullLogger fullLogger = new FullLogger(this.getClass());
+		// final HumanLogger humanLogger = new HumanLogger(this.getClass());
 
 		do {
 			try {
@@ -94,13 +73,19 @@ public class ResolverThread implements Runnable {
 				return;
 			}
 
-			// logger.warn("Request: " + request.getLogString());
-			// logger.warn("Response: " + response.getLogString());
+			// fullLogger.log("Request: " + request + "\n\n\n\n\n");
+			// fullLogger.log("Response: " + response);
+			// humanLogger.log(request.getLogString());
+			// humanLogger.log(response.getLogString());
 			// Retornamos la respuesta.
 			try {
 				final boolean respKeepAlive = this.keepAlive(response);
+				System.out.println("resp: " + respKeepAlive);
+				// respKeepAlive = true;
 				this.setHeaders(response, request);
 				this.sendResponse(response);
+				Statistics.getInstance().incrementProxyServerBytes(
+						response.getWritten() + response.toString().length());
 				if (this.hostConnections != null) {
 					if (respKeepAlive) {
 						this.hostConnections.free(this.server);
@@ -176,17 +161,20 @@ public class ResolverThread implements Runnable {
 
 	private boolean keepAlive(final HttpResponseImpl response) {
 		boolean keepAlive;
-
-		keepAlive = "keep-alive".equals(response.getHeader("Connection"));
+		keepAlive = response.getHeader("Connection") == null ? false
+				: "keep-alive".compareToIgnoreCase(response
+						.getHeader("Connection")) == 0;
 
 		keepAlive &= response.getProtocol().equals("HTTP/1.1");
-
+		System.out.println("keep vale: " + keepAlive);
 		return keepAlive;
 	}
 
 	private void sendResponse(final HttpResponseImpl response) {
 		try {
 			this.client.send(response);
+			Statistics.getInstance().incrementProxyClientBytes(
+					response.getWritten());
 		} catch (final ResponseException e) {
 			throw new CloseException("Error en el Response");
 		} catch (final exceptions.ServerException e) {
@@ -220,10 +208,6 @@ public class ResolverThread implements Runnable {
 		// System.out.println(response);
 		return response;
 	}
-
-	// TODO: Implementar el getConnection desde un host porque no hay otra
-	// forma, agregar un mapa con conexiones a host y que el mismo tenga varias
-	// conexiones disponbiles para ese host.
 
 	public Connection getConnection(final String host) {
 		this.hostConnections = this.connections
@@ -293,6 +277,7 @@ public class ResolverThread implements Runnable {
 			throw new CloseException(
 					"El cliente no response o cerro la conexion");
 		}
+		Statistics.getInstance().incrementProxyClientBytes(request.getRead());
 		return request;
 	}
 }

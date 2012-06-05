@@ -1,0 +1,26 @@
+Test de configuración en tiempo de ejecución:
+
+	BLOCK ACCESS blocks every access from the proxy.
+		no funciona, simplemente saca el css.
+	UNLOCK ACCESS grants access
+		vuelve a la normalidad.
+	L33T ON turns l33t mode on
+		no sé como testearlo
+	L33T OFF turns l33t mode off
+		no sé como testearlo
+	BLOCK IP [ip] blocks the given [ip] or group of ip's
+		no anda
+	UNLOCK IP [ip] unlocks the given [ip] or group of ip's
+		saca la ip del set de ip's.
+	BLOCK URI [uri] blocks the given [uri] or regular expression for uri
+		no anda
+	UNLOCK URI [uri] unlocks the given uri or regular expression for uri's
+		saca la uri del set de uri's.
+	MAXSIZE [size] sets a max quantity of bytes that can pass throught the proxy, set on 0 for unlimited amount
+		no anda
+	IMAGES ON turns on the flipping for images
+		no anda y tira una exception
+	IMAGES OFF turns off the flipping for images
+	BLOCK MEDIATYPE [media type] blocks the given [media type]
+		no anda o no estoy testeando bien.
+	UNLOCK MEDIATYPE [mediatype] unlocks the given [media type]

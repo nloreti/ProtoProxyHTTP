@@ -180,6 +180,7 @@ public class HttpRequestImpl extends HttpMsg {
 	public void write(final OutputStream out, final int c) {
 		try {
 			out.write(c);
+			written++;
 		} catch (final IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -189,6 +190,7 @@ public class HttpRequestImpl extends HttpMsg {
 	public void write(final OutputStream out, final byte[] bytes) {
 		try {
 			out.write(bytes);
+			written+=bytes.length;
 		} catch (final IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

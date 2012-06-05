@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
+import javax.ws.rs.core.MediaType;
 
 import model.HttpRequestImpl;
 import model.HttpResponseImpl;
@@ -26,7 +27,7 @@ public class RequestFilter {
 	private boolean access;
 	private List<String> ips;
 	private List<URI> uris;
-	private List<String> mediaTypes;
+	private List<MediaType> mediaTypes;
 	private int maxSize;
 
 	public static RequestFilter getInstance() {
@@ -43,7 +44,7 @@ public class RequestFilter {
 		this.maxSize = Integer.MAX_VALUE;
 		this.ips = new ArrayList<String>();
 		this.uris = new ArrayList<URI>();
-		this.mediaTypes = new ArrayList<String>();
+		this.mediaTypes = new ArrayList<MediaType>();
 	}
 
 	public HttpResponseImpl filter(final HttpRequestImpl request) {
@@ -64,7 +65,12 @@ public class RequestFilter {
 	}
 
 	public boolean blockMediaType(final String mediaType) {
-		return this.mediaTypes.add(mediaType);
+		try {
+			MediaType m = MediaType.valueOf(mediaType);
+			return this.mediaTypes.add(m);
+		} catch (IllegalArgumentException e) {
+			return false;
+		}
 	}
 
 	public boolean unlockMediaType(final String mediaType) {
@@ -176,7 +182,7 @@ public class RequestFilter {
 				System.out.println("Lista: " + this.mediaTypes.get(i)
 						+ "Response: " + response.getHeader("Content-Type"));
 				if (response.getHeader("Content-Type").matches(
-						this.mediaTypes.get(i))) {
+						this.mediaTypes.get(i).toString())) {
 					return true;
 				}
 			}

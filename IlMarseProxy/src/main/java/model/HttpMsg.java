@@ -19,6 +19,10 @@ public abstract class HttpMsg {
 		HTTP_1_0, HTTP_1_1, BAD_REQUEST
 	}
 
+	// private Map<String,String> headers = new HashMap<String, String>();
+	// final InputStream in;
+	int read = 0;
+	int written = 0;
 	private Map<String, List<String>> headers;
 	private String protocol;
 	private byte[] body;
@@ -123,7 +127,6 @@ public abstract class HttpMsg {
 
 		String line = null;
 		try {
-
 			line = new String(b.toByteArray(), encoding);
 		} catch (final UnsupportedEncodingException e) {
 			throw new EncodingException("ISO-8859-1");
@@ -135,6 +138,7 @@ public abstract class HttpMsg {
 	public int read() throws ServerException {
 		try {
 			// System.out.println("READ: " + this.in.toString());
+			this.read++;
 			return this.in.read();
 		} catch (final IOException e) {
 			throw new ServerException("Connection Problem");
@@ -150,4 +154,11 @@ public abstract class HttpMsg {
 
 	abstract void parseFirstLine(String[] line);
 
+	public int getRead() {
+		return this.read;
+	}
+
+	public int getWritten() {
+		return this.written;
+	}
 }

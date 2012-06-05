@@ -11,10 +11,15 @@ import java.net.URISyntaxException;
 public class FilterHandler implements ConnectionHandler {
 
 	/**
-	 * @uml.property  name="rf"
-	 * @uml.associationEnd  readOnly="true"
+	 * @uml.property name="rf"
+	 * @uml.associationEnd readOnly="true"
 	 */
 	RequestFilter rf;
+	private DinamicProxyConfiguration configuration = DinamicProxyConfiguration
+			.getInstance();
+
+	private String user;
+	private String pass;
 
 	public void handle(final Socket s) throws IOException {
 		// InputStream in = s.getInputStream();
@@ -24,6 +29,31 @@ public class FilterHandler implements ConnectionHandler {
 		final PrintWriter toClient = new PrintWriter(s.getOutputStream(), true);
 		// byte[] receiveBuf = new byte[BUFSIZE]; // Receive buffer
 		String response;
+		this.user = this.configuration.getUsername();
+		this.pass = this.configuration.getPassword();
+		boolean auth = false;
+		do {
+			toClient.println("USER:");
+			response = fromClient.readLine();
+			if (response.contains(this.user)) {
+				toClient.println("PASS:");
+				response = fromClient.readLine();
+				if (response.contains(this.pass)) {
+					auth = true;
+				}
+			}
+			// int recvMsgSize = 0;
+			// int totalSize = 0;
+			// while ((recvMsgSize = in.read(receiveBuf, totalSize, BUFSIZE
+			// - totalSize)) != -1) {
+			// totalSize += recvMsgSize;
+			// }
+			// response = parse(new String(receiveBuf));
+			// System.out.println("asd");
+			// out.write(response.getBytes("UTF-16LE"), 0,
+			// response.getBytes("UTF-16LE").length);
+			//
+		} while (!response.equals("BYE!") && !auth);
 		// Receive until client closes connection
 		do {
 			response = this.parse(fromClient.readLine());
@@ -46,7 +76,7 @@ public class FilterHandler implements ConnectionHandler {
 	private String parse(final String request) {
 		final RequestFilter rf = RequestFilter.getInstance();
 		if (request.equals("HELP")) {
-			return "Manual for usage:\64Type any command from the following list:\64\tBLOCK ACCESS blocks every access from the proxy.\64\tUNLOCK ACCESS grants access\64\tL33T ON turns l33t mode on\64\tL33T OFF turns l33t mode off\64\tBLOCK IP [ip] blocks the given [ip] or group of ip's\64\tUNLOCK IP [ip] unlocks the given [ip] or group of ip's\64\tBLOCK URI [uri] blocks the given [uri] or regular expression for uri\64\tUNLOCK URI [uri] unlocks the given uri or regular expression for uri's\64\tMAXSIZE [size] sets a max quantity of bytes that can pass throught the proxy, set on 0 for unlimited amount\64\tIMAGES ON turns on the flipping for images\64\tIMAGES OFF turns off the flipping for images\64\tBLOCK MEDIATYPE [media type] blocks the given [media type]\64\tUNLOCK MEDIATYPE [mediatype] unlocks the given [media type]\64End\64";
+			return "Manual for usage:\64Type any command from the following list:\64\tBLOCK ACCESS blocks every access from the proxy.\64\tUNLOCK ACCESS grants access\64\tL33T ON turns l33t mode on\64\tL33T OFF turns l33t mode off\64\tBLOCK IP [ip] blocks the given [ip] or group of ip's\64\tUNLOCK IP [ip] unlocks the given [ip] or group of ip's\64\tBLOCK URI [uri] blocks the given [uri] or regular expression for uri\64\tUNLOCK URI [uri] unlocks the given uri or regular expression for uri's\64\tSET MAXSIZE [size] sets a max quantity of bytes that can pass throught the proxy, set on 0 for unlimited amount\64\tIMAGES ON turns on the flipping for images\64\tIMAGES OFF turns off the flipping for images\64\tBLOCK MEDIATYPE [media type] blocks the given [media type]\64\tUNLOCK MEDIATYPE [mediatype] unlocks the given [media type]\64End\64";
 		} else if (request.equals("BLOCK ACCESS")) {
 			if (!rf.access()) {
 				return "ACCESS IS ALREADY BLOCKED";
@@ -85,7 +115,7 @@ public class FilterHandler implements ConnectionHandler {
 			return "IMAGES WILL NOW ROTATE";
 		} else if (request.startsWith("BLOCK IP ")) {
 			final String ip = request.substring(9);
-			if (ip.matches("%d.%d.%d")) {
+			if (!ip.matches("%d.%d.%d.%d")) {
 				return "INVALID IP";
 			}
 			if (!rf.blockIP(ip)) {
@@ -94,7 +124,7 @@ public class FilterHandler implements ConnectionHandler {
 			return ip + " BLOCKED";
 		} else if (request.startsWith("UNLOCK IP ")) {
 			final String ip = request.substring(10);
-			if (!ip.matches("%d.%d.%d")) {
+			if (!ip.matches("%d.%d.%d.%d")) {
 				return "INVALID IP";
 			}
 			if (rf.unlockIP(ip)) {
@@ -160,8 +190,14 @@ public class FilterHandler implements ConnectionHandler {
 														// servidor que provea
 														// todo, por eso lo puse
 														// aca.
-			return "TOTAL SITE BLOCKS:" + Statistics.getInstance().getSiteBlocks() + "\r\nTOTAL IP BLOCKS: " + Statistics.getInstance().getIpBlocks() + "\r\nTOTAL" +
-					" MEDIATYPE BLOCKS: " + Statistics.getInstance().getContentBlocks() + "\r\nTOTAL SIZE BLOCKS: " + Statistics.getInstance().getSizeBlocks();
+			return "TOTAL SITE BLOCKS:"
+					+ Statistics.getInstance().getSiteBlocks()
+					+ "\r\nTOTAL IP BLOCKS: "
+					+ Statistics.getInstance().getIpBlocks() + "\r\nTOTAL"
+					+ " MEDIATYPE BLOCKS: "
+					+ Statistics.getInstance().getContentBlocks()
+					+ "\r\nTOTAL SIZE BLOCKS: "
+					+ Statistics.getInstance().getSizeBlocks();
 		} else if (request.startsWith("GET OPEN CONNECTIONS")) {
 			return "TOTAL OPEN CONNECTIONS:"
 					+ Statistics.getInstance().getOpenConnections();
