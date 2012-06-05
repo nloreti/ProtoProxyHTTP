@@ -28,8 +28,8 @@ import exceptions.ResponseException;
 public class ThroughputTest {
 
 	public static void main(String[] args) {
-		testThroughputNoProxy();
-//		testThroughput();
+//		testThroughputNoProxy();
+		testThroughput();
 	}
 
 	
@@ -62,14 +62,14 @@ public class ThroughputTest {
 				final String addr;
 				switch (i%4) {
 				case 1:
-					req=getLocalCssRequest();
+					req=getImageRequest1();
 					addr="localhost";
 					break;
 
 				case 2:
 				case 3:
 				case 0:
-					req = getLocalCssRequest();
+					req = getImageRequest1();
 					addr="www.clarin.com";
 					break;
 
@@ -87,7 +87,7 @@ public class ThroughputTest {
 					
 					public void run() {
 						try {
-							ConnectionImpl c = new ConnectionImpl(InetAddress.getByName("localhost"), 8080);
+							ConnectionImpl c = new ConnectionImpl(InetAddress.getByName("www.clarin.com"), 80);
 							c.send(req);
 							
 							uploaded.addAndGet(req.getWritten());
@@ -120,9 +120,10 @@ public class ThroughputTest {
 	}
 	
 	public static void testThroughput(){
-		ExecutorService es = Executors.newFixedThreadPool(20);
+		ExecutorService es = Executors.newFixedThreadPool(100);
 		final int connections = 100;
 		final AtomicInteger completed = new AtomicInteger();
+		final AtomicInteger errors = new AtomicInteger();
 		try {
 			final FilterSocketServer filterServer = new FilterSocketServer(
 					9001, InetAddress.getByName("localhost"),
@@ -140,61 +141,34 @@ public class ThroughputTest {
 			es.execute(r);
 			long time = System.currentTimeMillis();
 			for(int i = 0 ; i<connections; i++){
-				final HttpRequestImpl req;
-				switch (i%4) {
-				case 1:
-					req=getImageRequest1();
-					break;
-
-				case 2:
-					req = getImageRequest1();
-					break;
-
-				case 3:
-					req = getImageRequest2();
-					break;
-
-				default:
-					req =getImageRequest2();
-					break;
-				}
 				es.execute(new Runnable() {
 					
 					public void run() {
 						try {
-							ConnectionImpl c = new ConnectionImpl(InetAddress.getByName("127.0.0.1"), 8090);
+							final HttpRequestImpl req=getImageRequest1();
+							ConnectionImpl c = new ConnectionImpl(InetAddress.getByName("localhost"), 8090);
 							c.send(req);
 							
 							c.receive();
-						} catch (UnknownHostException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						} catch (ServerException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						} catch (ResponseException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						} catch (EncodingException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}finally{
+						} catch (Exception e) {
+							errors.incrementAndGet();
+						} finally{
 						completed.incrementAndGet();
 						}
 					}
 
 				});
 			}
-			es.awaitTermination(10, TimeUnit.SECONDS);
+//			es.awaitTermination(10, TimeUnit.SECONDS);
 			while(completed.intValue()<connections){
 				Thread.currentThread().sleep(20);
 			}
 			es.shutdownNow();
-			double tp = ((Statistics.getInstance().getProxyClientBytes() + Statistics.getInstance().getProxyServerBytes())/(System.currentTimeMillis()-time));
+			double tp = (Statistics.getInstance().getProxyServerBytes()/(System.currentTimeMillis()-time));
 			double tpc = Statistics.getInstance().getProxyClientBytes()/(System.currentTimeMillis()-time);
 			System.out.println(Statistics.getInstance().getProxyClientBytes());
-			System.out.println("Total throughput = " + tp + "KB/s");
-			System.out.println("Max throughput to clients= " + tpc + "KB/s");
+			System.out.println("In/out throughput to servers = " + tp + "KB/s");
+			System.out.println("In/out throughput to clients= " + tpc + "KB/s");
 		} catch (final Exception e) {
 			e.printStackTrace();
 		}
