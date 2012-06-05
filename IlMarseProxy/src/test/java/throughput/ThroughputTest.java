@@ -28,8 +28,97 @@ import exceptions.ResponseException;
 public class ThroughputTest {
 
 	public static void main(String[] args) {
-		testThroughput();
+		testThroughputNoProxy();
+//		testThroughput();
 	}
+
+	
+	public static void testThroughputNoProxy(){
+		ExecutorService es = Executors.newFixedThreadPool(200);
+		final int connections = 200;
+		final AtomicInteger completed = new AtomicInteger();
+		final AtomicInteger downloaded = new AtomicInteger();
+		final AtomicInteger uploaded = new AtomicInteger();
+		final AtomicInteger errors = new AtomicInteger();
+		
+		try {
+			final FilterSocketServer filterServer = new FilterSocketServer(
+					9001, InetAddress.getByName("localhost"),
+					new FilterHandler());
+
+			new Thread(filterServer).start();
+			final ProxyHTTP proxy = new ProxyHTTP();
+			Runnable r = new Runnable() {
+				
+				public void run() {
+					proxy.run();
+					
+				}
+			};
+			es.execute(r);
+			long time = System.currentTimeMillis();
+			for(int i = 0 ; i<connections; i++){
+				final HttpRequestImpl req;
+				final String addr;
+				switch (i%4) {
+				case 1:
+					req=getLocalCssRequest();
+					addr="localhost";
+					break;
+
+				case 2:
+				case 3:
+				case 0:
+					req = getLocalCssRequest();
+					addr="www.clarin.com";
+					break;
+
+				case 5:
+					req = getImageRequest2();
+					addr="o1.t26.net";
+					break;
+
+				default:
+					req =getImageRequest2();
+					addr="o1.t26.net";
+					break;
+				}
+				es.execute(new Runnable() {
+					
+					public void run() {
+						try {
+							ConnectionImpl c = new ConnectionImpl(InetAddress.getByName("localhost"), 8080);
+							c.send(req);
+							
+							uploaded.addAndGet(req.getWritten());
+							HttpResponseImpl res = c.receive();
+							downloaded.addAndGet(res.getRead() + res.getBodyBytes().length);
+						} catch (Exception e) {
+							errors.incrementAndGet();
+						} finally{
+						completed.incrementAndGet();
+						}
+					}
+
+				});
+			}
+			es.awaitTermination(10, TimeUnit.SECONDS);
+			while(completed.intValue()<connections){
+				Thread.currentThread().sleep(20);
+			}
+			es.shutdownNow();
+			double up = (uploaded.doubleValue()/(System.currentTimeMillis()-time));
+			double down = (downloaded.doubleValue()/(System.currentTimeMillis()-time));
+			System.out.println("Errores: " + errors);
+			System.out.println("Velocidad promedio de subida = " + up*8 + "Kb/s");
+			System.out.println("Velocidad promedio de bajada= " + down*8 + "Kb/s");
+		} catch (final Exception e) {
+			e.printStackTrace();
+		}
+		
+		
+	}
+	
 	public static void testThroughput(){
 		ExecutorService es = Executors.newFixedThreadPool(20);
 		final int connections = 100;
@@ -112,6 +201,45 @@ public class ThroughputTest {
 		
 		
 	}
+	public static HttpRequestImpl getLocalCssRequest(){
+		final String a = "GET /zonaProp/css/bootstrap.css HTTP/1.1\r\n" +
+				"Host: localhost:8080\r\n" +
+				"Connection: keep-alive\r\n" +
+				"Cache-Control: no-cache\r\n" +
+				"Pragma: no-cache\r\n" +
+				"User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_3) AppleWebKit/536.5 (KHTML, like Gecko) Chrome/19.0.1084.53 Safari/536.5\r\n" +
+				"Accept: text/css,*/*;q=0.1\r\n" +
+				"Referer: http://localhost:8080/zonaProp/login\r\n" +
+				"Accept-Encoding: gzip,deflate,sdch\r\n" +
+				"Accept-Language: en-US,en;q=0.8\r\n" +
+				"Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.3\r\n" +
+				"Cookie: JSESSIONID=01E58BE3F426329DEFEEBABA7BE67063; JSESSIONID=1dww5lw8g1kc9\r\n\r\n";
+		
+		InputStream in1 = new InputStream() {
+			int p;
+			@Override
+			public int read() throws IOException {
+				if(p<a.length())
+					return a.charAt(p++);
+				return -1;
+			}
+		};
+		HttpRequestImpl req = null;
+		try {
+			req = new HttpRequestImpl(in1);
+		} catch (ServerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ResponseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (EncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return req;
+	}
+	
 	
 	public static HttpRequestImpl getImageRequest1(){
 		final String a = "GET /sociedad/intenso-invierno-ingreso-madrugada-DyN_CLAIMA20120604_0105_3.jpg HTTP/1.1\r\n" +

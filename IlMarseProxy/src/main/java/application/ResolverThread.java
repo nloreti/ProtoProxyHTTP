@@ -87,7 +87,7 @@ public class ResolverThread implements Runnable {
 				this.setHeaders(response, request);
 				this.sendResponse(response);
 				Statistics.getInstance().incrementProxyServerBytes(
-						response.getWritten() + response.toString().length());
+						response.getWritten() + response.getBodyBytes().length);
 				if (this.hostConnections != null) {
 					if (respKeepAlive) {
 						this.hostConnections.free(this.server);
@@ -175,7 +175,7 @@ public class ResolverThread implements Runnable {
 		try {
 			this.client.send(response);
 			Statistics.getInstance().incrementProxyClientBytes(
-					response.getWritten());
+					response.getWritten() + response.getBodyBytes().length);
 		} catch (final ResponseException e) {
 			throw new CloseException("Error en el Response");
 		} catch (final exceptions.ServerException e) {
