@@ -43,7 +43,7 @@ public class ThroughputTest {
 		
 		try {
 			final FilterSocketServer filterServer = new FilterSocketServer(
-					9001, InetAddress.getByName("localhost"),
+					InetAddress.getByName("localhost"),
 					new FilterHandler());
 
 			new Thread(filterServer).start();
@@ -126,7 +126,7 @@ public class ThroughputTest {
 		final AtomicInteger errors = new AtomicInteger();
 		try {
 			final FilterSocketServer filterServer = new FilterSocketServer(
-					9001, InetAddress.getByName("localhost"),
+					InetAddress.getByName("localhost"),
 					new FilterHandler());
 
 			new Thread(filterServer).start();
@@ -166,7 +166,7 @@ public class ThroughputTest {
 			es.shutdownNow();
 			double tp = (Statistics.getInstance().getProxyServerBytes()/(System.currentTimeMillis()-time));
 			double tpc = Statistics.getInstance().getProxyClientBytes()/(System.currentTimeMillis()-time);
-			System.out.println(Statistics.getInstance().getProxyClientBytes());
+			System.out.println(errors);
 			System.out.println("In/out throughput to servers = " + tp + "KB/s");
 			System.out.println("In/out throughput to clients= " + tpc + "KB/s");
 		} catch (final Exception e) {
