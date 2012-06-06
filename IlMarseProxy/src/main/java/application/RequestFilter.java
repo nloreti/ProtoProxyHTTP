@@ -10,6 +10,7 @@ import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.ws.rs.core.MediaType;
@@ -164,7 +165,7 @@ public class RequestFilter {
 					return this.generateBlockedResponse(this.maxSize, response);
 				}
 			}
-
+		
 			if (this.isMediaTypeBlockable(response)) {
 				Statistics.getInstance().incrementContentBlocks();
 				return this.generateBlockedResponseByMediaType(response);
@@ -174,6 +175,13 @@ public class RequestFilter {
 		}
 		return response;
 	}
+
+	private HttpResponseImpl generateBlockedResponseByUserAgent(
+			HttpResponseImpl response) {
+		return generateBlockedResponse(
+				"The user agent is blocked", response);
+	}
+
 
 	private boolean isMediaTypeBlockable(final HttpResponseImpl response) {
 		int i;
@@ -352,4 +360,5 @@ public class RequestFilter {
 		}
 		return response;
 	}
+
 }

@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+
 public class FilterHandler implements ConnectionHandler {
 
 	RequestFilter rf;
