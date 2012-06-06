@@ -161,6 +161,7 @@ public class ResolverThread implements Runnable {
 		} catch (final EncodingException e) {
 			throw new CloseException("Error en el Econding");
 		}
+
 		response = RequestFilter.getInstance().doFilter(request, response);
 		return response;
 	}

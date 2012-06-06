@@ -6,10 +6,11 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 import javax.ws.rs.core.MediaType;
@@ -26,7 +27,7 @@ public abstract class Block {
 	boolean leet;
 	boolean access;
 	Set<InetAddress> ips;
-	Set<URI> uris;
+	Set<String> uris;
 	Set<MediaType> mediaTypes;
 	int maxSize;
 
@@ -35,7 +36,7 @@ public abstract class Block {
 		this.leet = false;
 		this.access = true;
 		this.ips = new HashSet<InetAddress>();
-		this.uris = new HashSet<URI>();
+		this.uris = new HashSet<String>();
 		this.mediaTypes = new HashSet<MediaType>();
 		this.maxSize = 0;
 	}
@@ -71,12 +72,14 @@ public abstract class Block {
 		return this.maxSize != 0;
 	}
 
-	public boolean unlockUri(final URI uri) {
+	public boolean unlockUri(final String uri) {
+		System.out.println("UNLOCK URI: " + uri);
 		return this.uris.remove(uri);
 	}
 
-	public boolean blockUri(final URI uri) {
-		return this.uris.add(uri);
+	public boolean blockUri(final String regex) {
+		System.out.println("URI BLOCK: " + regex);
+		return this.uris.add(regex);
 	}
 
 	public boolean access() {
@@ -194,8 +197,13 @@ public abstract class Block {
 	}
 
 	private boolean urisBlocked(final HttpRequestImpl request) {
-		for (final URI uri : this.uris) {
-			if (request.getRequestURI().equals(uri)) {
+		String requestUri;
+		for (final String uri : this.uris) {
+			requestUri = "http://" + request.getHost()
+					+ request.getRequestURI().toString();
+			final Pattern pattern = Pattern.compile(uri);
+			final Matcher matcher = pattern.matcher(requestUri);
+			if (matcher.matches()) {
 				return true;
 			}
 		}

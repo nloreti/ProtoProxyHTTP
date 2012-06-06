@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -79,6 +77,11 @@ public class FilterHandler implements ConnectionHandler {
 		// .matches("^.[0-9]{1,3}/..[0-9]{1,3}/..[0-9]{1,3}/..[0-9]{1,3}");
 		// return IP.matches("%d.%d.%d.%d") || IP.matches("%d.*.*.*")
 		// || IP.matches("%d.%d.*.*") || IP.matches("%d.%d.%d.*");
+	}
+
+	public boolean isURI(final String URI) {
+		// return URI.matches("http://%s");
+		return true;
 	}
 
 	private String parse(final String request) {
@@ -198,36 +201,27 @@ public class FilterHandler implements ConnectionHandler {
 		} else if (request.startsWith("BLOCK URI ")) {
 			final String uri = request.substring(10);
 			// urivalidator!
-			if (false) {
+			if (!this.isURI(uri)) {
 				return uri + " IS NOT A VALID URI";
+			}
+			final Pattern p = Pattern.compile(uri);
+			if (!block.blockUri(p.pattern())) {
+				return uri + " IS ALREADY BLOCKED";
 
 			}
-			try {
-				if (!block.blockUri(new URI(uri))) {
-					return uri + " IS ALREADY BLOCKED";
 
-				}
-			} catch (final URISyntaxException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 			return uri + " HAS BEEN BLOCKED";
 
 		} else if (request.startsWith("UNLOCK URI ")) {
 			final String uri = request.substring(11);
 			// urivalidator!
-			if (false) {
+			if (!this.isURI(uri)) {
 				return uri + "IS NOT A VALID URI";
-
 			}
-			try {
-				if (!block.unlockUri(new URI(uri))) {
-					return uri + "NOT BLOCKED";
+			final Pattern p = Pattern.compile(uri);
+			if (!block.unlockUri(p.pattern())) {
+				return uri + "NOT BLOCKED";
 
-				}
-			} catch (final URISyntaxException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 			return uri + "UNLOCKED";
 
