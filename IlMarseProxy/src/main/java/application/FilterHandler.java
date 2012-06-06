@@ -196,7 +196,7 @@ public class FilterHandler implements ConnectionHandler {
 				return "INVALID IP";
 
 			}
-			if (block.unlockIP(ip)) {
+			if (!block.unlockIP(ip)) {
 				return ip + " NOT BLOCKED";
 
 			}

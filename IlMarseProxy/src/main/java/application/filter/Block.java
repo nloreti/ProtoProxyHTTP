@@ -104,7 +104,7 @@ public abstract class Block {
 
 	public boolean blockIP(final String ip) {
 		try {
-			final InetAddress address = InetAddress.getByAddress(ip.getBytes());
+			final InetAddress address = InetAddress.getByName(ip);
 			this.ips.add(address);
 		} catch (final UnknownHostException e) {
 			return false;
@@ -115,7 +115,7 @@ public abstract class Block {
 	public boolean unlockIP(final String ip) {
 
 		try {
-			return this.ips.remove(InetAddress.getByAddress(ip.getBytes()));
+			return this.ips.remove(InetAddress.getByName(ip));
 		} catch (final UnknownHostException e) {
 			return false;
 		}
