@@ -1,0 +1,14 @@
+Definición protocolo de configuración.
+
+
+La primer palabra DEBE ser FOR o GET, en caso contrario se retornará un status code de error.
+En caso de que la primera palabra sea FOR:
+Cada mensaje de request DEBE ser una linea de 4 a 5 palabras.
+La segunda palabra indica el tipo de bloqueo y DEBE ser una de las siguientes: LINUX | MAC_OS_X | WINDOWS | FIREFOX | CHROME | EXPLORER | SAFARI | [ip]
+Donde [ip] es cualquier dirección ip válida.
+Las demás palabras DEBEN ser alguna de las siguientes opciones: BLOCK ACCESS | UNLOCK ACCESS | L33T ON | L33T OFF | IMAGES ON | IMAGES OFF | BLOCK IP [ip] | UNLOCK IP [ip] | BLOCK URI [uri] | UNLOCK URI [uri] | BLOCK MEDIATYPE [mediatype] | UNLOCK MEDIATYPE [mediatype] | SET MAXSIZE [maxsize]
+Donde maxsize se seteará en 0 para no tener límite.
+
+En caso de que la primera palabra sea GET:
+Cada mensaje de request DEBE ser una linea de 2 a 4 palabras
+La segunda palabra DEBE ser una de las siguientes: BLOCKS | OPEN CONNECTIONS | CLIENT BYTES TRANSMITED | SERVER BYTES TRANSMITED | TRANSFORMATIONS | TOTAL BYTES TRANSMITED

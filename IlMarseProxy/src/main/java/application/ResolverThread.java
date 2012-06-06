@@ -1,6 +1,7 @@
 package application;
 
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.rmi.ServerException;
@@ -8,7 +9,7 @@ import java.rmi.ServerException;
 import model.HttpRequestImpl;
 import model.HttpResponseImpl;
 
-import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Logger;
 
 import connection.CollectionConnectionHandler;
 import connection.CollectionConnectionHandlerImpl;
@@ -30,9 +31,9 @@ public class ResolverThread implements Runnable {
 	// Conexion con el Host
 	volatile EndPointConnectionHandler hostConnections;
 	// Para conexiones persistentes
-	boolean proxyKeepAlive = true;
+	boolean KeepAlive = true;
 	// Logger
-	// static final Logger logger = Logger.getLogger(ResolverThread.class);
+	static final Logger logger = Logger.getLogger(ResolverThread.class);
 	// Se usa para el Max-Fowards para el Proxy Chain
 	private static Integer MAX_FORWARDS = 5;
 
@@ -48,13 +49,11 @@ public class ResolverThread implements Runnable {
 		this.client = client;
 	}
 
+	@Override
 	public void run() {
 		HttpRequestImpl request = null;
 		HttpResponseImpl response = null;
-		BasicConfigurator.configure();
-
-		// final FullLogger fullLogger = new FullLogger(this.getClass());
-		// final HumanLogger humanLogger = new HumanLogger(this.getClass());
+		// BasicConfigurator.configure();
 
 		do {
 			try {
@@ -62,32 +61,26 @@ public class ResolverThread implements Runnable {
 				try {
 					response = this.getResponse(request);
 				} catch (final CloseException e) {
-					// System.out.println("Fallo el R & Response");
-					this.proxyKeepAlive = false;
+					this.KeepAlive = false;
 					this.close();
 					return;
 				}
 			} catch (final Exception e) {
-				this.proxyKeepAlive = false;
+				this.KeepAlive = false;
 				this.close();
 				return;
 			}
 
-
-//			fullLogger.log("Request: " + request + "\n\n\n\n\n");
-//			fullLogger.log("Response: " + response);
-//			humanLogger.log(request.getLogString());
-//			humanLogger.log(response.getLogString());
+			logger.info("Request: " + request + "\n\n\n\n\n");
+			logger.info("Response: " + response);
 			// Retornamos la respuesta.
 			try {
-				boolean respKeepAlive = this.keepAlive(response);
-//				System.out.println("resp: " + respKeepAlive);
-//				respKeepAlive = true;
+				final boolean respKeepAlive = this.keepAlive(response);
 
 				this.setHeaders(response, request);
 				this.sendResponse(response);
-				Statistics.getInstance().incrementProxyServerBytes(response.getWritten());
-//				System.out.println(response.getWritten());
+				Statistics.getInstance().incrementProxyServerBytes(
+						response.getWritten());
 				if (this.hostConnections != null) {
 					if (respKeepAlive) {
 						this.hostConnections.free(this.server);
@@ -104,16 +97,21 @@ public class ResolverThread implements Runnable {
 				return;
 			}
 
-		} while (this.proxyKeepAlive && !this.client.isClosed()
+		} while (this.KeepAlive && !this.client.isClosed()
 				&& this.keepAlive(request));
 		this.close();
+	}
+
+	public Connection getConnection(final String host) {
+		this.hostConnections = this.connections
+				.getEndPointConnectionHandler(host);
+		return this.hostConnections.getConnection();
 	}
 
 	private void close() {
 		if (this.server != null) {
 			if (this.hostConnections == null) {
 				throw new CloseException("Connexion con el host erronea");
-				// System.out.println("HostConnections es null!");
 			}
 			this.hostConnections.drop(this.server);
 		}
@@ -121,17 +119,78 @@ public class ResolverThread implements Runnable {
 
 	}
 
+	private HttpRequestImpl getRequest() throws ServerException,
+			ResponseException, EncodingException {
+
+		HttpRequestImpl request = null;
+		InputStream stream = null;
+		try {
+			stream = this.client.getInputStream();
+		} catch (final Exception e) {
+			throw new CloseException("Falla al traer el InputStream");
+		}
+		try {
+			request = new HttpRequestImpl(stream);
+			this.alterateRequest(request);
+		} catch (final Exception e) {
+			throw new CloseException(
+					"El cliente no response o cerro la conexion");
+		}
+		Statistics.getInstance().incrementProxyClientBytes(request.getRead());
+		return request;
+	}
+
+	private HttpResponseImpl getResponse(final HttpRequestImpl request) {
+
+		HttpResponseImpl response = null;
+
+		this.server = this.getConnection(request.getHost());
+		this.server.send(request);
+		try {
+			response = this.server.receive();
+		} catch (final ServerException e) {
+			throw new CloseException("Error en el Server");
+		} catch (final ResponseException e) {
+			throw new CloseException("Error en el Response");
+		} catch (final EncodingException e) {
+			throw new CloseException("Error en el Econding");
+		}
+		response = RequestFilter.getInstance().doFilter(request, response,
+				this.getSourceIP());
+		return response;
+	}
+
+	private void sendResponse(final HttpResponseImpl response) {
+		try {
+			this.client.send(response);
+			Statistics.getInstance().incrementProxyClientBytes(
+					response.getWritten());
+		} catch (final ResponseException e) {
+			throw new CloseException("Error en el Response");
+		} catch (final exceptions.ServerException e) {
+			throw new CloseException("Error en el Response");
+		} catch (final ServerTimeOutException e) {
+			throw new CloseException("Time out Server");
+		} catch (final ConnectionException e) {
+			throw new CloseException("Error en la Conexión");
+		}
+
+	}
+
 	private boolean keepAlive(final HttpRequestImpl request) {
+
+		boolean hasToClose;
 
 		if (!this.configuration.isClientPersistent() || request == null) {
 			return false;
 		}
 
-		boolean hasToClose;
-
 		if ("HTTP/1.1".equals(request.getProtocol())) {
-			hasToClose = "close".equals(request.getHeader("Connection"));
-			hasToClose |= "close".equals(request.getHeader("Proxy-Connection"));
+			final boolean connection = "close".equals(request
+					.getHeader("Connection"));
+			final boolean proxyConnection = "close".equals(request
+					.getHeader("Proxy-Connection"));
+			hasToClose = connection | proxyConnection;
 		} else {
 			hasToClose = true;
 		}
@@ -171,53 +230,7 @@ public class ResolverThread implements Runnable {
 		return keepAlive;
 	}
 
-	private void sendResponse(final HttpResponseImpl response) {
-		try {
-			this.client.send(response);
-//			System.out.println(response.getWritten());
-			Statistics.getInstance().incrementProxyClientBytes(response.getWritten());
-		} catch (final ResponseException e) {
-			throw new CloseException("Error en el Response");
-		} catch (final exceptions.ServerException e) {
-			throw new CloseException("Error en el Response");
-		} catch (final ServerTimeOutException e) {
-			throw new CloseException("Time out Server");
-		} catch (final ConnectionException e) {
-			throw new CloseException("Error en la Conexión");
-		}
-
-	}
-
-	private HttpResponseImpl getResponse(final HttpRequestImpl request) {
-
-		HttpResponseImpl response = null;
-
-		this.server = this.getConnection(request.getHost());
-		this.server.send(request);
-		try {
-			response = this.server.receive();
-		} catch (final ServerException e) {
-			throw new CloseException("Error en el Server");
-		} catch (final ResponseException e) {
-			throw new CloseException("Error en el Response");
-		} catch (final EncodingException e) {
-			throw new CloseException("Error en el Econding");
-		}
-
-		response = RequestFilter.getInstance().doFilter(request, response);
-		// response = rf.doFilter(request, response);
-		// System.out.println(response);
-		return response;
-	}
-
-	public Connection getConnection(final String host) {
-		this.hostConnections = this.connections
-				.getEndPointConnectionHandler(host);
-		// System.out.println("Host Connections: " + hostConnections);
-		return this.hostConnections.getConnection();
-	}
-
-	private void modifyRequest(final HttpRequestImpl req) {
+	private void alterateRequest(final HttpRequestImpl req) {
 		String url = null;
 		if (req.getHeader("Via") != null) {
 			req.appendHeader("Via", req.getProtocol() + " IlMarseProxy");
@@ -260,25 +273,8 @@ public class ResolverThread implements Runnable {
 		}
 	}
 
-	private HttpRequestImpl getRequest() throws ServerException,
-			ResponseException, EncodingException {
-
-		HttpRequestImpl request = null;
-		InputStream stream = null;
-		try {
-			stream = this.client.getInputStream();
-			// System.out.println("STREAM: " + stream);
-		} catch (final Exception e) {
-			throw new CloseException("Falla al traer el InputStream");
-		}
-		try {
-			request = new HttpRequestImpl(stream);
-			this.modifyRequest(request);
-		} catch (final Exception e) {
-			throw new CloseException(
-					"El cliente no response o cerro la conexion");
-		}
-		Statistics.getInstance().incrementProxyClientBytes(request.getRead());
-		return request;
+	public InetAddress getSourceIP() {
+		return this.client.getSourceIP();
 	}
+
 }

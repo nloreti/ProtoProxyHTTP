@@ -46,10 +46,11 @@ public class EndPointConnectionHandlerImpl implements EndPointConnectionHandler 
 		this.timer.scheduleAtFixedRate(task, 0, 1000);
 	}
 
+	@Override
 	public synchronized Connection getConnection() {
 
 		if (!this.connections.isEmpty()) {
-			System.out.println("se reuso una conexion");
+			// System.out.println("se reuso una conexion");
 			return this.connections.poll();
 		}
 
@@ -70,6 +71,7 @@ public class EndPointConnectionHandlerImpl implements EndPointConnectionHandler 
 		return connection;
 	}
 
+	@Override
 	public void free(final Connection connection) {
 		if (connection != null) {
 			try {
@@ -79,6 +81,7 @@ public class EndPointConnectionHandlerImpl implements EndPointConnectionHandler 
 				}
 				this.lastModified = System.currentTimeMillis();
 				this.connections.offer(connection);
+
 			} catch (final IOException e) {
 				this.drop(connection);
 			}
@@ -89,6 +92,7 @@ public class EndPointConnectionHandlerImpl implements EndPointConnectionHandler 
 		}
 	}
 
+	@Override
 	public void drop(final Connection connection) {
 		if (connection != null) {
 			connection.close();

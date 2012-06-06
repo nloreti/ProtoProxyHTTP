@@ -6,30 +6,28 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import javax.imageio.ImageIO;
-import javax.ws.rs.core.MediaType;
 
 import model.HttpRequestImpl;
 import model.HttpResponseImpl;
+import nl.bitwalker.useragentutils.Browser;
+import nl.bitwalker.useragentutils.OperatingSystem;
+import application.filter.Block;
+import application.filter.BrowserBlock;
+import application.filter.IpBlock;
+import application.filter.OSBlock;
+import application.filter.SimpleBlock;
 import exceptions.CloseException;
 import exceptions.ImageException;
 
 public class RequestFilter {
 
-	private static RequestFilter instance = null;
-	private boolean images;
-	private boolean leet;
-	private boolean access;
-	private List<String> ips;
-	private List<URI> uris;
-	private List<MediaType> mediaTypes;
-	private int maxSize;
+	static RequestFilter instance = null;
+	private List<Block> blocks;
 
 	public static RequestFilter getInstance() {
 		if (instance == null) {
@@ -39,196 +37,80 @@ public class RequestFilter {
 	}
 
 	public RequestFilter() {
-		this.images = false;
-		this.leet = false;
-		this.access = true;
-		this.maxSize = Integer.MAX_VALUE;
-		this.ips = new ArrayList<String>();
-		this.uris = new ArrayList<URI>();
-		this.mediaTypes = new ArrayList<MediaType>();
-	}
-
-	public HttpResponseImpl filter(final HttpRequestImpl request) {
-		return null;
-	}
-
-	public boolean images() {
-		return this.images;
-	}
-
-	public boolean setMaxSize(final int ms) {
-		this.maxSize = ms;
-		return this.hasMaxSize();
-	}
-
-	public boolean hasMaxSize() {
-		return this.maxSize != 0;
-	}
-
-	public boolean blockMediaType(final String mediaType) {
-		try {
-			MediaType m = MediaType.valueOf(mediaType);
-			return this.mediaTypes.add(m);
-		} catch (IllegalArgumentException e) {
-			return false;
-		}
-	}
-
-	public boolean unlockMediaType(final String mediaType) {
-		return this.mediaTypes.remove(mediaType);
-	}
-
-	public boolean unlockUri(final URI uri) {
-		return this.uris.remove(uri);
-	}
-
-	public boolean blockUri(final URI uri) {
-		return this.uris.add(uri);
-	}
-
-	public boolean access() {
-		return this.access;
-	}
-
-	public void accessOff() {
-		this.access = false;
-	}
-
-	public void accessOn() {
-		this.access = true;
-	}
-
-	public void leetOn() {
-		this.leet = true;
-	}
-
-	public void leetOff() {
-		this.leet = false;
-	}
-
-	public boolean leet() {
-		return this.leet;
-	}
-
-	public void imagesOff() {
-		this.images = false;
-	}
-
-	public void imagesOn() {
-		this.images = true;
-	}
-
-	public boolean blockIP(final String ip) {
-		return this.ips.add(ip);
-	}
-
-	public boolean unlockIP(final String ip) {
-		return this.ips.remove(ip);
+		this.blocks = new ArrayList<Block>();
 	}
 
 	public HttpResponseImpl doFilter(final HttpRequestImpl request,
-			final HttpResponseImpl response) {
-
-		try {
-			if (!this.access) {
-				return this.generateBlockedResponse(response);
+			final HttpResponseImpl response, final InetAddress ip) {
+		boolean isRotated = false;
+		boolean isLeet = false;
+		for (final Block b : this.blocks) {
+			final HttpResponseImpl resp = b.doFilter(request, response, ip);
+			if (resp != null) {
+				return resp;
 			}
-			if (this.destinationIPIsBlocked(request)) {
-				Statistics.getInstance().incrementIpBlocks();
-				return this.generateBlockedResponseByIp(
-						InetAddress.getByName(request.getHost())
-								.getHostAddress(), response);
-			}
-			if (this.images) {
-				if (response.containsType("image/.*")) {
-					System.out.println("ENTRA a las fotos RequestFilter");
-					Statistics.getInstance().incrementTransformations();
-					this.rotateImage(response);
-				}
-			}
-			if (this.leet) {
-				if (response.containsType("text/plain.*")) {
-					String body = new String(response.getBody());
-					body = body.replace('a', '4').replace('e', '3')
-							.replace('i', '1').replace('o', '0');
-					response.setBody(body.getBytes());
-				}
-			}
-			if (this.urisBlocked(request)) {
-				Statistics.getInstance().incrementSiteBlocks();
-				return this.generateBlockedResponseByUri(request
-						.getRequestURI().toString(), response);
-			}
-			if (response.getContentLength() != null) {
-				if (Integer.valueOf(response.getContentLength()) > this.maxSize) {
-					Statistics.getInstance().incrementSizeBlocks();
-					return this.generateBlockedResponse(this.maxSize, response);
-				}
-			}
-		
-			if (this.isMediaTypeBlockable(response)) {
-				Statistics.getInstance().incrementContentBlocks();
-				return this.generateBlockedResponseByMediaType(response);
-			}
-		} catch (final UnknownHostException e) {
-			e.printStackTrace();
+			isRotated |= b.images();
+			isLeet |= b.leet();
 		}
+		this.doTransformations(request, response, isRotated, isLeet);
 		return response;
 	}
 
-	private HttpResponseImpl generateBlockedResponseByUserAgent(
-			HttpResponseImpl response) {
-		return generateBlockedResponse(
-				"The user agent is blocked", response);
-	}
+	private void doTransformations(final HttpRequestImpl request,
+			final HttpResponseImpl response, final boolean isRotated,
+			final boolean isLeet) {
 
-
-	private boolean isMediaTypeBlockable(final HttpResponseImpl response) {
-		int i;
-		for (i = 0; i < this.mediaTypes.size(); i++) {
-			if (response.getHeader("Content-Type") != null) {
-				System.out.println("Lista: " + this.mediaTypes.get(i)
-						+ "Response: " + response.getHeader("Content-Type"));
-				if (response.getHeader("Content-Type").matches(
-						this.mediaTypes.get(i).toString())) {
-					return true;
-				}
+		if (isRotated) {
+			if (response.containsType("image/.*")) {
+				Statistics.getInstance().incrementTransformations();
+				this.rotateImage(response);
 			}
 		}
-		return false;
-	}
-
-	private boolean urisBlocked(final HttpRequestImpl request) {
-		int i;
-		for (i = 0; i < this.uris.size(); i++) {
-			if (request.getRequestURI().equals(this.uris.get(i))) {
-				return true;
+		if (isLeet) {
+			if (response.containsType("text/plain.*")) {
+				String body = new String(response.getBody());
+				body = body.replace('a', '4').replace('e', '3')
+						.replace('i', '1').replace('o', '0');
+				response.setBody(body.getBytes());
 			}
 		}
-		return false;
+
 	}
 
-	private boolean destinationIPIsBlocked(final HttpRequestImpl request) {
-
-		int i = 0;
-		InetAddress requestIP;
-		try {
-			requestIP = InetAddress.getByName(request.getHost());
-
-			for (i = 0; i < this.ips.size(); i++) {
-				final InetAddress listIP = InetAddress.getByName(this.ips
-						.get(i));
-				if ((listIP.getHostAddress())
-						.equals(requestIP.getHostAddress())) {
-					return true;
-				}
-			}
-		} catch (final UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	public Block getIpBlock(final String ip) throws UnknownHostException {
+		final Block b = new IpBlock(ip);
+		if (this.blocks.contains(b)) {
+			return this.blocks.get(this.blocks.indexOf(b));
 		}
+		this.blocks.add(b);
+		return b;
+	}
 
-		return false;
+	public Block getBrowserBlock(final String browser) {
+		final Block b = new BrowserBlock(Browser.valueOf(browser));
+		if (this.blocks.contains(b)) {
+			return this.blocks.get(this.blocks.indexOf(b));
+		}
+		this.blocks.add(b);
+		return b;
+	}
+
+	public Block getOsBlock(final String os) {
+		final Block b = new OSBlock(OperatingSystem.valueOf(os));
+		if (this.blocks.contains(b)) {
+			return this.blocks.get(this.blocks.indexOf(b));
+		}
+		this.blocks.add(b);
+		return b;
+	}
+
+	public Block getSimpleBlock() {
+		final Block b = new SimpleBlock();
+		if (this.blocks.contains(b)) {
+			return this.blocks.get(this.blocks.indexOf(b));
+		}
+		this.blocks.add(b);
+		return b;
 	}
 
 	private void rotateImage(final HttpResponseImpl response) {
@@ -278,73 +160,17 @@ public class RequestFilter {
 		try {
 			ImageIO.write(newImage, format, resp);
 		} catch (final IOException e) {
-			System.out.println("error al guardar la imagen");
+			System.out.println("Error en la imagen");
 			e.printStackTrace();
 		}
 
 		try {
 			resp.flush();
 		} catch (final IOException e) {
-			System.out.println("flush error");
+			System.out.println("Error haciendo flush de la imagen");
 			e.printStackTrace();
 		}
 
 		return resp.toByteArray();
 	}
-
-	private HttpResponseImpl generateBlockedResponseByIp(
-			final String destinationIp, final HttpResponseImpl response) {
-		return this.generateBlockedResponse(
-				"This ip has been blocked by the proxy administrator. IP: "
-						+ destinationIp, response);
-	}
-
-	private HttpResponseImpl generateBlockedResponseByMediaType(
-			final HttpResponseImpl response) {
-
-		response.setStatusCode(406);
-		response.replaceHeader("Content-Length", "0");
-		final String body = "";
-		response.setBody(body.getBytes());
-		return response;
-	}
-
-	private HttpResponseImpl generateBlockedResponse(
-			final HttpResponseImpl response) {
-		return this
-				.generateBlockedResponse(
-						"The access has been completely blocked by the proxy administrator.",
-						response);
-	}
-
-	private HttpResponseImpl generateBlockedResponseByUri(
-			final String requestURI, final HttpResponseImpl response) {
-		return this.generateBlockedResponse(
-				"This URI has been blocked by the proxy administrator. URI: "
-						+ requestURI, response);
-	}
-
-	private HttpResponseImpl generateBlockedResponse(final int size,
-			final HttpResponseImpl response) {
-		return this.generateBlockedResponse(
-				"The resource you are trying to reach is too big. Size: "
-						+ size, response);
-	}
-
-	private HttpResponseImpl generateBlockedResponse(final String string,
-			final HttpResponseImpl response) {
-		try {
-			final String body = "<title>Feedback Page</title><html><body><h1>"
-					+ string + "<h1></body></html>";
-
-			response.appendHeader("Content-Length",
-					String.valueOf(body.length()));
-			response.removeHeader("Content-Encoding");
-			response.setBody(body.getBytes());
-		} catch (final Exception e) {
-			throw new CloseException("Bad Blocked Response");
-		}
-		return response;
-	}
-
 }

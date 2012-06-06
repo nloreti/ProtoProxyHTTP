@@ -22,6 +22,8 @@ public interface Connection {
 
 	public InetAddress getRemoteIP();
 
+	public InetAddress getSourceIP();
+
 	public void close();
 
 	public boolean isClosed();
