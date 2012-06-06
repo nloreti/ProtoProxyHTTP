@@ -1,6 +1,7 @@
 package application;
 
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.rmi.ServerException;
@@ -276,6 +277,10 @@ public class ResolverThread implements Runnable {
 		} catch (final URISyntaxException e) {
 			throw new CloseException("Fallo en la creacion de la URI");
 		}
+	}
+
+	public InetAddress getSourceIP() {
+		return this.client.getSourceIP();
 	}
 
 }

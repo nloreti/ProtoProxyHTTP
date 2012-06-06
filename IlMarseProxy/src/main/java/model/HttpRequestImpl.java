@@ -68,7 +68,7 @@ public class HttpRequestImpl extends HttpMsg {
 	@Override
 	void parseFirstLine(final String[] line) {
 		if (line.length != 3) {
-//			System.out.println("Problema el leer la request-line." + line);
+			// System.out.println("Problema el leer la request-line." + line);
 		}
 
 		this.method = ImplementedMethod.getMethod(line[0]);
@@ -180,7 +180,7 @@ public class HttpRequestImpl extends HttpMsg {
 	public void write(final OutputStream out, final int c) {
 		try {
 			out.write(c);
-			written++;
+			this.written++;
 		} catch (final IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -190,7 +190,7 @@ public class HttpRequestImpl extends HttpMsg {
 	public void write(final OutputStream out, final byte[] bytes) {
 		try {
 			out.write(bytes);
-			written+=bytes.length;
+			this.written += bytes.length;
 		} catch (final IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -201,11 +201,6 @@ public class HttpRequestImpl extends HttpMsg {
 		return this.method.equals(ImplementedMethod.HEAD)
 				|| this.method.equals(ImplementedMethod.GET)
 				|| this.method.equals(ImplementedMethod.POST);
-	}
-
-	public String getMediaType() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	public String getDestinationIp() {

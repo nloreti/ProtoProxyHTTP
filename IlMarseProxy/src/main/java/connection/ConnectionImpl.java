@@ -176,6 +176,10 @@ public class ConnectionImpl implements Connection {
 		return this.host;
 	}
 
+	public InetAddress getSourceIP() {
+		return this.socket.getInetAddress();
+	}
+
 	@Override
 	public boolean isClosed() {
 		return this.socket.isClosed();
