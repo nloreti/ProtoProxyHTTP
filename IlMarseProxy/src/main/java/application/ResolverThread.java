@@ -54,7 +54,7 @@ public class ResolverThread implements Runnable {
 	public void run() {
 		HttpRequestImpl request = null;
 		HttpResponseImpl response = null;
-		BasicConfigurator.configure();
+		//BasicConfigurator.configure();
 
 		do {
 			try {
@@ -161,7 +161,7 @@ public class ResolverThread implements Runnable {
 		} catch (final EncodingException e) {
 			throw new CloseException("Error en el Econding");
 		}
-		response = RequestFilter.getInstance().doFilter(request, response);
+		response = RequestFilter.getInstance().doFilter(request, response, getSourceIP());
 		return response;
 	}
 

@@ -1,37 +1,29 @@
 package application.filter;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import model.HttpRequestImpl;
 import model.HttpResponseImpl;
 
 public class IpBlock extends Block {
 
-	private String ip;
+	private InetAddress ip;
 
-	public IpBlock(final String ip) {
+	public IpBlock(final String ip) throws UnknownHostException {
 		super();
-		this.ip = ip;
+		this.ip = InetAddress.getByAddress(ip.getBytes());
 	}
 
 	@Override
 	public HttpResponseImpl doFilter(final HttpRequestImpl req,
-			final HttpResponseImpl resp) {
-		if (!this.equalIps(req.getDestinationIp(), this.ip)) {
+			final HttpResponseImpl resp, InetAddress ip) {
+		if (!ip.equals(this.ip)) {
 			return null;
 		}
 		return this.filter(req, resp);
 	}
 
-	private boolean equalIps(String ip1, String ip2) {
-		if (ip1.contains("*")) {
-			ip1 = ip1.replace('*', '\0');
-			return ip2.startsWith(ip1);
-		}
-		if (ip2.contains("*")) {
-			ip2 = ip2.replace('*', '\0');
-			return ip1.startsWith(ip2);
-		}
-		return ip1.equals(ip2);
-	}
 
 	@Override
 	public boolean equals(final Object b) {

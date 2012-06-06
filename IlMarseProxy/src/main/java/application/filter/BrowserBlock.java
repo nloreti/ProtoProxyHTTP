@@ -1,5 +1,7 @@
 package application.filter;
 
+import java.net.InetAddress;
+
 import model.HttpRequestImpl;
 import model.HttpResponseImpl;
 import nl.bitwalker.useragentutils.Browser;
@@ -15,7 +17,7 @@ public class BrowserBlock extends Block {
 	}
 	
 	@Override
-	public HttpResponseImpl doFilter(HttpRequestImpl req, HttpResponseImpl resp) {
+	public HttpResponseImpl doFilter(HttpRequestImpl req, HttpResponseImpl resp, InetAddress ip) {
 		UserAgent ua = new UserAgent(req.getHeader("User-Agent"));
 		if( !browser.equals(ua.getBrowser()) )
 			return null;

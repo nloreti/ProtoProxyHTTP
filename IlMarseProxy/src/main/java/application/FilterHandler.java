@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -103,8 +104,12 @@ public class FilterHandler implements ConnectionHandler {
 				block = this.rf.getOsBlock(parsedString[1]);
 				message = this.parseAction(command, block);
 			} else if (this.isIP(parsedString[1])) {
-				block = this.rf.getIpBlock(parsedString[1]);
-				message = this.parseAction(command, block);
+				try {
+					block = this.rf.getIpBlock(parsedString[1]);
+					message = this.parseAction(command, block);
+				} catch (UnknownHostException e) {
+					return "400 - Comando invalido";
+				}
 			} else if (parsedString[1].equals("ALL")) {
 				block = this.rf.getSimpleBlock();
 				message = this.parseAction(command, block);

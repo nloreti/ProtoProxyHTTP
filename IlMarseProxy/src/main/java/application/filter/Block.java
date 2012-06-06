@@ -126,7 +126,7 @@ public abstract class Block {
 	}
 
 	public abstract HttpResponseImpl doFilter(HttpRequestImpl req,
-			HttpResponseImpl resp);
+			HttpResponseImpl resp, InetAddress ip);
 
 	HttpResponseImpl filter(final HttpRequestImpl req,
 			final HttpResponseImpl resp) {

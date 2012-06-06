@@ -1,5 +1,7 @@
 package application;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,16 +32,16 @@ public class RequestFilter {
 	}
 
 	public HttpResponseImpl doFilter(final HttpRequestImpl request,
-			final HttpResponseImpl response) {
+			final HttpResponseImpl response, InetAddress ip) {
 		for (Block b : blocks) {
-			HttpResponseImpl resp = b.doFilter(request, response);
+			HttpResponseImpl resp = b.doFilter(request, response, ip);
 			if (resp != null)
 				return resp;
 		}
 		return response;
 	}
 
-	public Block getIpBlock( String ip ){
+	public Block getIpBlock( String ip ) throws UnknownHostException{
 		Block b = new IpBlock(ip);
 		if( blocks.contains(b) )
 			return blocks.get(blocks.indexOf(b));
