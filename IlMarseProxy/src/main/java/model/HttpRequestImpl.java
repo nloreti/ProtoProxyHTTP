@@ -9,7 +9,9 @@ import java.rmi.ServerException;
 import java.util.List;
 import java.util.Map.Entry;
 
+import exceptions.BadMessageException;
 import exceptions.EncodingException;
+import exceptions.RequestException;
 import exceptions.ResponseException;
 
 public class HttpRequestImpl extends HttpMsg {
@@ -41,7 +43,7 @@ public class HttpRequestImpl extends HttpMsg {
 	private HttpVersion version;
 
 	public HttpRequestImpl(final InputStream in) throws ResponseException,
-			EncodingException, ServerException {
+			EncodingException, ServerException, BadMessageException {
 
 		// this.in = in;
 		super(in);
@@ -66,9 +68,9 @@ public class HttpRequestImpl extends HttpMsg {
 	}
 
 	@Override
-	void parseFirstLine(final String[] line) {
+	void parseFirstLine(final String[] line) throws RequestException {
 		if (line.length != 3) {
-			// System.out.println("Problema el leer la request-line." + line);
+			throw new RequestException("Error parseando la primera linea");
 		}
 
 		this.method = ImplementedMethod.getMethod(line[0]);

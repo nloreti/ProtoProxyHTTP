@@ -50,7 +50,7 @@ public class EndPointConnectionHandlerImpl implements EndPointConnectionHandler 
 	public synchronized Connection getConnection() {
 
 		if (!this.connections.isEmpty()) {
-			System.out.println("se reuso una conexion");
+			// System.out.println("se reuso una conexion");
 			return this.connections.poll();
 		}
 

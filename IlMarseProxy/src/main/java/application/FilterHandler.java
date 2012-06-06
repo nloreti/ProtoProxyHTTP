@@ -91,7 +91,6 @@ public class FilterHandler implements ConnectionHandler {
 		String command = null;
 		String message = null;
 		Block block = null;
-		System.out.println("Longitud: " + parsedString.length);
 		if (parsedString.length >= 4 && parsedString.length <= 5
 				&& parsedString[0].equals("FOR")) {
 			if (parsedString.length == 5) {
@@ -133,9 +132,7 @@ public class FilterHandler implements ConnectionHandler {
 		// } else
 		if (request.equals("BLOCK ACCESS")) {
 			if (!block.access()) {
-
 				return "ACCESS IS ALREADY BLOCKED";
-
 			}
 			block.accessOff();
 			return "ACCESS BLOCKED";
@@ -193,7 +190,7 @@ public class FilterHandler implements ConnectionHandler {
 
 		} else if (request.startsWith("UNLOCK IP ")) {
 			final String ip = request.substring(10);
-			if (!ip.matches("%d.%d.%d.%d")) {
+			if (!this.isIP(ip)) {
 				return "INVALID IP";
 
 			}

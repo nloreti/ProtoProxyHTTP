@@ -12,9 +12,6 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
-import exceptions.CloseException;
-import exceptions.ImageException;
-
 import model.HttpRequestImpl;
 import model.HttpResponseImpl;
 import nl.bitwalker.useragentutils.Browser;
@@ -24,6 +21,8 @@ import application.filter.BrowserBlock;
 import application.filter.IpBlock;
 import application.filter.OSBlock;
 import application.filter.SimpleBlock;
+import exceptions.CloseException;
+import exceptions.ImageException;
 
 public class RequestFilter {
 
@@ -38,30 +37,31 @@ public class RequestFilter {
 	}
 
 	public RequestFilter() {
-		blocks = new ArrayList<Block>();
+		this.blocks = new ArrayList<Block>();
 	}
 
 	public HttpResponseImpl doFilter(final HttpRequestImpl request,
-			final HttpResponseImpl response, InetAddress ip) {
+			final HttpResponseImpl response, final InetAddress ip) {
 		boolean isRotated = false;
 		boolean isLeet = false;
-		for (Block b : blocks) {
-			HttpResponseImpl resp = b.doFilter(request, response, ip);
-			if (resp != null)
+		for (final Block b : this.blocks) {
+			final HttpResponseImpl resp = b.doFilter(request, response, ip);
+			if (resp != null) {
 				return resp;
+			}
 			isRotated |= b.images();
 			isLeet |= b.leet();
 		}
-		doTransformations(request, response, isRotated, isLeet);
+		this.doTransformations(request, response, isRotated, isLeet);
 		return response;
 	}
 
-	private void doTransformations(HttpRequestImpl request,
-			HttpResponseImpl response, boolean isRotated, boolean isLeet) {
+	private void doTransformations(final HttpRequestImpl request,
+			final HttpResponseImpl response, final boolean isRotated,
+			final boolean isLeet) {
 
 		if (isRotated) {
 			if (response.containsType("image/.*")) {
-				System.out.println("ENTRA a las fotos RequestFilter");
 				Statistics.getInstance().incrementTransformations();
 				this.rotateImage(response);
 			}
@@ -77,35 +77,39 @@ public class RequestFilter {
 
 	}
 
-	public Block getIpBlock(String ip) throws UnknownHostException {
-		Block b = new IpBlock(ip);
-		if (blocks.contains(b))
-			return blocks.get(blocks.indexOf(b));
-		blocks.add(b);
+	public Block getIpBlock(final String ip) throws UnknownHostException {
+		final Block b = new IpBlock(ip);
+		if (this.blocks.contains(b)) {
+			return this.blocks.get(this.blocks.indexOf(b));
+		}
+		this.blocks.add(b);
 		return b;
 	}
 
-	public Block getBrowserBlock(String browser) {
-		Block b = new BrowserBlock(Browser.valueOf(browser));
-		if (blocks.contains(b))
-			return blocks.get(blocks.indexOf(b));
-		blocks.add(b);
+	public Block getBrowserBlock(final String browser) {
+		final Block b = new BrowserBlock(Browser.valueOf(browser));
+		if (this.blocks.contains(b)) {
+			return this.blocks.get(this.blocks.indexOf(b));
+		}
+		this.blocks.add(b);
 		return b;
 	}
 
-	public Block getOsBlock(String os) {
-		Block b = new OSBlock(OperatingSystem.valueOf(os));
-		if (blocks.contains(b))
-			return blocks.get(blocks.indexOf(b));
-		blocks.add(b);
+	public Block getOsBlock(final String os) {
+		final Block b = new OSBlock(OperatingSystem.valueOf(os));
+		if (this.blocks.contains(b)) {
+			return this.blocks.get(this.blocks.indexOf(b));
+		}
+		this.blocks.add(b);
 		return b;
 	}
 
 	public Block getSimpleBlock() {
-		Block b = new SimpleBlock();
-		if (blocks.contains(b))
-			return blocks.get(blocks.indexOf(b));
-		blocks.add(b);
+		final Block b = new SimpleBlock();
+		if (this.blocks.contains(b)) {
+			return this.blocks.get(this.blocks.indexOf(b));
+		}
+		this.blocks.add(b);
 		return b;
 	}
 
@@ -156,14 +160,14 @@ public class RequestFilter {
 		try {
 			ImageIO.write(newImage, format, resp);
 		} catch (final IOException e) {
-			System.out.println("error al guardar la imagen");
+			System.out.println("Error en la imagen");
 			e.printStackTrace();
 		}
 
 		try {
 			resp.flush();
 		} catch (final IOException e) {
-			System.out.println("flush error");
+			System.out.println("Error haciendo flush de la imagen");
 			e.printStackTrace();
 		}
 

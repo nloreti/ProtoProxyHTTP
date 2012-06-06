@@ -61,7 +61,6 @@ public class ResolverThread implements Runnable {
 				try {
 					response = this.getResponse(request);
 				} catch (final CloseException e) {
-					// System.out.println("Fallo el R & Response");
 					this.KeepAlive = false;
 					this.close();
 					return;
@@ -77,14 +76,11 @@ public class ResolverThread implements Runnable {
 			// Retornamos la respuesta.
 			try {
 				final boolean respKeepAlive = this.keepAlive(response);
-				// System.out.println("resp: " + respKeepAlive);
-				// respKeepAlive = true;
 
 				this.setHeaders(response, request);
 				this.sendResponse(response);
 				Statistics.getInstance().incrementProxyServerBytes(
 						response.getWritten());
-				// System.out.println(response.getWritten());
 				if (this.hostConnections != null) {
 					if (respKeepAlive) {
 						this.hostConnections.free(this.server);
@@ -130,7 +126,6 @@ public class ResolverThread implements Runnable {
 		InputStream stream = null;
 		try {
 			stream = this.client.getInputStream();
-			// System.out.println("STREAM: " + stream);
 		} catch (final Exception e) {
 			throw new CloseException("Falla al traer el InputStream");
 		}
@@ -168,7 +163,6 @@ public class ResolverThread implements Runnable {
 	private void sendResponse(final HttpResponseImpl response) {
 		try {
 			this.client.send(response);
-			// System.out.println(response.getWritten());
 			Statistics.getInstance().incrementProxyClientBytes(
 					response.getWritten());
 		} catch (final ResponseException e) {

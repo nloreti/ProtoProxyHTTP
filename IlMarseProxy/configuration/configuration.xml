@@ -8,8 +8,8 @@
 	<proxyPort value="8090"/>
 	<proxyBackLog value="50"/>
 	<maxServersPerConnection value="100"/>
-	<timeOutClient value="10000"/>
-	<timeOutServer value="10000"/>
+	<timeOutClient value="3000"/>
+	<timeOutServer value="5000"/>
 	<username value="admin"/>
 	<password value="admin"/>
 </configuration>

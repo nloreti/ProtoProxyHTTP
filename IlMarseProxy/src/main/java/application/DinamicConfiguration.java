@@ -29,8 +29,6 @@ public class DinamicConfiguration {
 	public void build(final Document doc) {
 
 		doc.getDocumentElement().normalize();
-		System.out.println("Root element of the doc is "
-				+ doc.getDocumentElement().getNodeName());
 
 		final NodeList listOfmetricScoperesult = doc
 				.getElementsByTagName("configuration");
@@ -39,19 +37,16 @@ public class DinamicConfiguration {
 
 			final Node firstMetricNode = listOfmetricScoperesult.item(s);
 
-			final NodeList listOfmetricResults = firstMetricNode
+			final NodeList listOfconfigurationResults = firstMetricNode
 					.getChildNodes();
 
-			for (int n = 0; n < listOfmetricResults.getLength(); n++) {
+			for (int n = 0; n < listOfconfigurationResults.getLength(); n++) {
 
 				if (!(n % 2 == 0)) {// No me preguntes porque es modulo dos,
 									// escapa de mi conocimiento jaja.
-					final Node metricNode = listOfmetricResults.item(n);
-					final Element elemento = (Element) metricNode;
-
-					final String metricName = elemento.getAttribute("value");
-
-					System.out.println(metricName);
+					final Node configurationNode = listOfconfigurationResults
+							.item(n);
+					final Element elemento = (Element) configurationNode;
 
 					if (elemento.getNodeName().equals("inicialThreads")) {
 						this.inicialThreads = Integer.valueOf(elemento
