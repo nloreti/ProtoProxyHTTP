@@ -46,7 +46,7 @@ public class FilterHandler implements ConnectionHandler {
 				if (response.contains(this.pass)) {
 					auth = true;
 				} else {
-					toClient.println("400 - Wrong Username or Password");
+					toClient.println("Wrong Username or Password");
 				}
 			}
 		} while (!response.equals("BYE!") && !auth);
@@ -110,17 +110,19 @@ public class FilterHandler implements ConnectionHandler {
 					block = this.rf.getIpBlock(parsedString[1]);
 					message = this.parseAction(command, block);
 				} catch (final UnknownHostException e) {
-					return "400 - IP invalida";
+					return "IP invalida";
 				}
 			} else if (parsedString[1].equals("ALL")) {
 				block = this.rf.getSimpleBlock();
 				message = this.parseAction(command, block);
 			}
+		} else if (parsedString[0].equals("GET")) {
+			message = this.parseAction(request, block);
 		}
 		if (message == null) {
-			return "400 - Comando invalido";
+			return "Comando invalido";
 		}
-		return "200 - " + message;
+		return message;
 
 	}
 

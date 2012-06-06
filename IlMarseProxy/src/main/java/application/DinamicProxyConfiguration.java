@@ -13,10 +13,6 @@ import org.xml.sax.SAXParseException;
 public class DinamicProxyConfiguration implements ProxyConfiguration {
 
 	static DinamicProxyConfiguration proxyInstance;
-	/**
-	 * @uml.property name="configuration"
-	 * @uml.associationEnd multiplicity="(1 1)"
-	 */
 	DinamicConfiguration configuration;
 	private static String path = "configuration/configuration.xml";
 
