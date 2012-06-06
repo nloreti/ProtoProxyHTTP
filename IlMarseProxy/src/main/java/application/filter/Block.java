@@ -9,8 +9,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 import javax.ws.rs.core.MediaType;
@@ -198,12 +196,21 @@ public abstract class Block {
 
 	private boolean urisBlocked(final HttpRequestImpl request) {
 		String requestUri;
-		for (final String uri : this.uris) {
+		for (final String regex : this.uris) {
 			requestUri = "http://" + request.getHost()
 					+ request.getRequestURI().toString();
-			final Pattern pattern = Pattern.compile(uri);
-			final Matcher matcher = pattern.matcher(requestUri);
-			if (matcher.matches()) {
+			System.out.println("REQUEST: " + requestUri + " URI: " + regex);
+			final String[] newString = regex.split("*");
+			if (newString.length > 1) {
+
+				System.out.println("NewString: " + newString[0]);
+				if (requestUri.startsWith(newString[0])) {
+					System.out.println("ENTROOOOOOOOOOOO!!!!!!!!");
+					return true;
+				}
+			}
+
+			if (requestUri.matches(regex)) {
 				return true;
 			}
 		}
