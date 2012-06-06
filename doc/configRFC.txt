@@ -1,0 +1,111 @@
+Definición protocolo de configuración.
+
+
+Tabla de contenidos
+
+	1	Introducción ...................................................
+	2	Gramática ......................................................
+	3	Parámetros del protocolo .......................................
+	4	Semántica de los mensajes ......................................
+
+
+	1. 	Introducción
+	1.1 Propósito
+		El protocolo de configuración es un protocolo de nivel aplicación 
+		para configuración de un proxy que cumpla con el RFC 2616.
+	1.2 Características
+		Es un protocolo orientado a linea de texto.
+		
+	2.	Gramática
+	2.1	Composición general del mensaje
+		Los mensajes se dividen en dos grandes grupos, los de POST y GET.
+	2.2	Mensajes POST
+		Los mensajes POST sirven para indicar que se quiere cambiar alguna 
+		configuración del proxy.
+		Los mensajes POST DEBEN empezar con FOR, de lo contrario no
+		serán considerados mensajes POST.
+		Los mensajes POST DEBEN ser una linea de 4 a 5 palabras.
+	2.3	Mensajes GET
+		Los mensajes GET sirven para pedirle algún recurso al proxy.
+		Los mensajes GET DEBEN empezar con GET, de lo contrario no
+		serán considerados mensajes GET.
+		Los mensajes GET DEBEN ser una linea de 2 a 4 palabras.
+		
+	3.	Parámetros del protocolo
+	3.1	Parámetros de POST
+		FOR [BLOQUEO] [COMANDO1] [COMANDO2] [VAR]
+		[BLOQUEO] indica el tipo de bloqueo y DEBE ser una de las siguientes:
+			| LINUX
+			| MAX_OS_X
+			| WINDOWS
+			| FIREFOX
+			| CHROME
+			| EXPLORER
+			| SAFARI
+			| [ip]
+			| ALL
+		[COMANDO1] [COMANDO2] indican el recurso que se quiere
+		alterar y [VAR] su valor cuando sea necesario indicarlo.
+		La terna [COMANDO1] [COMANDO2] [VAR] DEBE ser una de las sigueintes:
+			| BLOCK ACCESS 
+			| UNLOCK ACCESS 
+			| L33T ON 
+			| L33T OFF 
+			| IMAGES ON 
+			| IMAGES OFF 
+			| BLOCK IP [ip] 				[ip] DEBE ser una ip válida
+			| UNLOCK IP [ip] 				[ip] DEBE ser una ip válida
+			| BLOCK URI [uri] 				[uri] DEBE ser una URI válida o
+											una expresión regular de URI
+			| UNLOCK URI [uri] 				[uri] DEBE ser una URI válida o
+											una expresión regular de URI
+			| BLOCK MEDIATYPE [mediatype] 	[mediatype] DEBE ser un media type válido
+			| UNLOCK MEDIATYPE [mediatype] 	[mediatype] DEBE ser un media type válido
+			| SET MAXSIZE [maxsize]			[maxsize] DEBE ser un entero
+	3.2 Parámetros de GET
+		GET [RECURSO] [RECURSO] [RECURSO]
+		Los 3 [RECURSO] indican el recurso al que se quieren acceder, deben ser
+		uno de los siguientes:
+			| BLOCKS 
+			| OPEN CONNECTIONS 
+			| CLIENT BYTES TRANSMITED 
+			| SERVER BYTES TRANSMITED 
+			| TRANSFORMATIONS 
+			| TOTAL BYTES TRANSMITED
+	
+	
+	4.	Semántica de los mensajes
+	4.1 Semántica de POST
+		Los mensajes POST indican que se quiere alterar un recurso de la configuración del proxy.
+		Se puede querer alterar un recurso para distintas especificaciones, estas pueden ser:
+			| FOR [BROWSER]				Se aplica el POST solamente para [BROWSER]
+			| FOR [OPERATINGSYSTEM]		Se aplica el POST solamente para [OPERATINGSYSTEM]
+			| FOR [IP]					Se aplica el POST solamente para [IP]
+			| FOR ALL					Se aplica el POST para todos los requests
+		El recurso a ser alterado es representado por una terna de palabras, la terna DEBE
+		ser una de las sigueintes:
+		
+			| BLOCK ACCESS 					bloquea el acceso a cualquier recurso
+			| UNLOCK ACCESS 				desbloquea el acceso a cualquier recurso
+			| L33T ON 						activa la conversión de texto a l33t
+			| L33T OFF 						desactiva la conversión de texto a l33t
+			| IMAGES ON 					activa la rotación de imágenes
+			| IMAGES OFF 					desactiva la rotación de imágenes
+			| BLOCK IP [ip] 				bloquea el acceso a [ip]
+			| UNLOCK IP [ip] 				desbloquea el acceso a [ip]
+			| BLOCK URI [uri] 				bloquea el acceso a [uri]
+			| UNLOCK URI [uri] 				desbloquea el acceso a [uri]
+			| BLOCK MEDIATYPE [mediatype] 	bloquea el acceso a dicho mediatype [mediatype]
+			| UNLOCK MEDIATYPE [mediatype] 	bloquea el acceso a dicho mediatype [mediatype]
+			| SET MAXSIZE [maxsize]			setea el máximo de bytes que puede tener la response
+											si se setea en 0 este será ilimitado.
+										
+	4.2 Semántica de GET
+		Los mensajes GET indican que se quiere obtener un recurso del proxy.
+		Pueden ser los siguientes:
+			| GET BLOCKS 					
+			| GET OPEN CONNECTIONS 			devuelve la cantidad de conexiones abiertas
+			| GET CLIENT BYTES TRANSMITED 	devuelve la cantidad de bytes que transmitió el cliente
+			| GET SERVER BYTES TRANSMITED 	devuelve la cantidad de bytes que transmitió el servidor
+			| GET TRANSFORMATIONS 			devuelve la cantidad de transformaciones activas
+			| GET TOTAL BYTES TRANSMITED	devuelve la cantidad total de bytes transmitidos
