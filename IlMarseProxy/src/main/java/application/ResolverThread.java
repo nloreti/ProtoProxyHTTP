@@ -72,8 +72,8 @@ public class ResolverThread implements Runnable {
 				return;
 			}
 
-			logger.debug("Request: " + request + "\n\n\n\n\n");
-			logger.debug("Response: " + response);
+			logger.info("Request: " + request + "\n\n\n\n\n");
+			logger.info("Response: " + response);
 			// Retornamos la respuesta.
 			try {
 				final boolean respKeepAlive = this.keepAlive(response);

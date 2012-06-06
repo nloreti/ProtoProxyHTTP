@@ -7,6 +7,8 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import application.filter.Block;
 
@@ -15,6 +17,11 @@ public class FilterHandler implements ConnectionHandler {
 	RequestFilter rf = RequestFilter.getInstance();
 	private DinamicProxyConfiguration configuration = DinamicProxyConfiguration
 			.getInstance();
+
+	static final String IPADDRESS_PATTERN = "^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
+			+ "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
+			+ "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
+			+ "([01]?\\d\\d?|2[0-4]\\d|25[0-5])$";
 
 	private String user;
 	private String pass;
@@ -63,8 +70,15 @@ public class FilterHandler implements ConnectionHandler {
 	}
 
 	public boolean isIP(final String IP) {
-		return IP.matches("%d.%d.%d.%d") || IP.matches("%d.*.*.*")
-				|| IP.matches("%d.%d.*.*") || IP.matches("%d.%d.%d.*");
+
+		final Pattern pattern = Pattern.compile(IPADDRESS_PATTERN);
+		final Matcher matcher = pattern.matcher(IP);
+		return matcher.matches();
+
+		// return IP
+		// .matches("^.[0-9]{1,3}/..[0-9]{1,3}/..[0-9]{1,3}/..[0-9]{1,3}");
+		// return IP.matches("%d.%d.%d.%d") || IP.matches("%d.*.*.*")
+		// || IP.matches("%d.%d.*.*") || IP.matches("%d.%d.%d.*");
 	}
 
 	private String parse(final String request) {
@@ -75,7 +89,7 @@ public class FilterHandler implements ConnectionHandler {
 		String message = null;
 		Block block = null;
 		System.out.println("Longitud: " + parsedString.length);
-		if (parsedString.length == 4 && parsedString[0].equals("FOR")) {
+		if (parsedString.length >= 4 && parsedString[0].equals("FOR")) {
 			command = parsedString[2] + " " + parsedString[3];
 			if (this.isBrowser(parsedString[1])) {
 				block = this.rf.getBrowserBlock(parsedString[1]);
@@ -154,7 +168,7 @@ public class FilterHandler implements ConnectionHandler {
 
 		} else if (request.startsWith("BLOCK IP ")) {
 			final String ip = request.substring(9);
-			if (!ip.matches("%d.%d.%d.%d")) {
+			if (!this.isIP(ip)) {
 				return "INVALID IP";
 
 			}
