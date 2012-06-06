@@ -263,4 +263,6 @@ public abstract class Block {
 
 		return resp.toByteArray();
 	}
+	
+	public abstract boolean equals(Block b);
 }

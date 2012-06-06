@@ -12,4 +12,9 @@ public class SimpleBlock extends Block {
 	public HttpResponseImpl doFilter(HttpRequestImpl req, HttpResponseImpl resp) {
 		return filter(req, resp);
 	}
+	
+	@Override
+	public boolean equals(Block b) {
+		return b.getClass().equals(SimpleBlock.class);
+	}
 }

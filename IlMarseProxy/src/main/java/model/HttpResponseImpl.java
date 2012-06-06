@@ -96,7 +96,7 @@ public class HttpResponseImpl extends HttpMsg {
 
 		try {
 			out.write(b);
-			written++;
+			this.written++;
 		} catch (final IOException e) {
 			throw new ClientException("Problema en Conexion del Cliente");
 		}
@@ -107,7 +107,7 @@ public class HttpResponseImpl extends HttpMsg {
 
 		try {
 			out.write(bytes);
-			written+=bytes.length;
+			this.written += bytes.length;
 		} catch (final IOException e) {
 			throw new ClientException("Problema en Conexion del Cliente");
 		}
@@ -233,6 +233,10 @@ public class HttpResponseImpl extends HttpMsg {
 
 	public String getReasonPhrase() {
 		return this.reason;
+	}
+
+	public void setReasonPhrase(final String reason) {
+		this.reason = reason;
 	}
 
 	public int getStatusCode() {

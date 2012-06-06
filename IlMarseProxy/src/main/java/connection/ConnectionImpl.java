@@ -91,6 +91,7 @@ public class ConnectionImpl implements Connection {
 
 	/* Fin de Constructores */
 
+	@Override
 	public void send(final HttpResponseImpl response) {
 		OutputStream out;
 		try {
@@ -106,6 +107,7 @@ public class ConnectionImpl implements Connection {
 
 	}
 
+	@Override
 	public void send(final HttpRequestImpl request) {
 		OutputStream out;
 		try {
@@ -117,6 +119,7 @@ public class ConnectionImpl implements Connection {
 		}
 	}
 
+	@Override
 	public HttpResponseImpl receive() throws ResponseException,
 			ServerException, EncodingException {
 		InputStream stream = null;
@@ -140,6 +143,7 @@ public class ConnectionImpl implements Connection {
 		return null;
 	}
 
+	@Override
 	public InputStream getInputStream() {
 
 		try {
@@ -152,10 +156,12 @@ public class ConnectionImpl implements Connection {
 		return null;
 	}
 
+	@Override
 	public InetAddress getRemoteIP() {
 		return this.socket.getInetAddress();
 	}
 
+	@Override
 	public void close() {
 		// Si el socket ya esta cerrado, retorno.
 		if (this.isClosed()) {
@@ -176,6 +182,7 @@ public class ConnectionImpl implements Connection {
 		return this.host;
 	}
 
+	@Override
 	public boolean isClosed() {
 		return this.socket.isClosed();
 	}

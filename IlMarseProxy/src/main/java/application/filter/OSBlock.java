@@ -21,4 +21,11 @@ public class OSBlock extends Block {
 		return filter( req, resp );
 	}
 
+	@Override
+	public boolean equals(Block b) {
+		if( b.getClass().equals(OSBlock.class) ){
+			return ((OSBlock)b).os == os;
+		}
+		return false;
+	}
 }
