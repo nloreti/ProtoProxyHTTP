@@ -46,7 +46,7 @@ public class FilterHandler implements ConnectionHandler {
 				if (response.contains(this.pass)) {
 					auth = true;
 				} else {
-					toClient.println("400 - Wrong Username or Password");
+					toClient.println("Wrong Username or Password");
 				}
 			}
 		} while (!response.equals("BYE!") && !auth);
@@ -91,7 +91,6 @@ public class FilterHandler implements ConnectionHandler {
 		String command = null;
 		String message = null;
 		Block block = null;
-		System.out.println("Longitud: " + parsedString.length);
 		if (parsedString.length >= 4 && parsedString.length <= 5
 				&& parsedString[0].equals("FOR")) {
 			if (parsedString.length == 5) {
@@ -111,17 +110,19 @@ public class FilterHandler implements ConnectionHandler {
 					block = this.rf.getIpBlock(parsedString[1]);
 					message = this.parseAction(command, block);
 				} catch (final UnknownHostException e) {
-					return "400 - IP invalida";
+					return "IP invalida";
 				}
 			} else if (parsedString[1].equals("ALL")) {
 				block = this.rf.getSimpleBlock();
 				message = this.parseAction(command, block);
 			}
+		} else if (parsedString[0].equals("GET")) {
+			message = this.parseAction(request, block);
 		}
 		if (message == null) {
-			return "400 - Comando invalido";
+			return "Comando invalido";
 		}
-		return "200 - " + message;
+		return message;
 
 	}
 
@@ -133,9 +134,7 @@ public class FilterHandler implements ConnectionHandler {
 		// } else
 		if (request.equals("BLOCK ACCESS")) {
 			if (!block.access()) {
-
 				return "ACCESS IS ALREADY BLOCKED";
-
 			}
 			block.accessOff();
 			return "ACCESS BLOCKED";
@@ -193,7 +192,7 @@ public class FilterHandler implements ConnectionHandler {
 
 		} else if (request.startsWith("UNLOCK IP ")) {
 			final String ip = request.substring(10);
-			if (!ip.matches("%d.%d.%d.%d")) {
+			if (!this.isIP(ip)) {
 				return "INVALID IP";
 
 			}

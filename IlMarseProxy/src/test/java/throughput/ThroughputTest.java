@@ -41,7 +41,6 @@ public class ThroughputTest {
 			final ProxyHTTP proxy = new ProxyHTTP();
 			final Runnable r = new Runnable() {
 
-				@Override
 				public void run() {
 					proxy.run();
 
@@ -77,7 +76,6 @@ public class ThroughputTest {
 				}
 				es.execute(new Runnable() {
 
-					@Override
 					public void run() {
 						try {
 							final ConnectionImpl c = new ConnectionImpl(
@@ -141,7 +139,6 @@ public class ThroughputTest {
 			final ProxyHTTP proxy = new ProxyHTTP();
 			final Runnable r = new Runnable() {
 
-				@Override
 				public void run() {
 					proxy.run();
 
@@ -152,7 +149,6 @@ public class ThroughputTest {
 			for (int i = 0; i < connections; i++) {
 				es.execute(new Runnable() {
 
-					@Override
 					public void run() {
 						try {
 							final HttpRequestImpl req = getImageRequest1();
@@ -175,13 +171,16 @@ public class ThroughputTest {
 				Thread.currentThread().sleep(20);
 			}
 			es.shutdownNow();
+
 			final double tp = (Statistics.getInstance().getProxyServerBytes() / (System
 					.currentTimeMillis() - time));
 			final double tpc = Statistics.getInstance().getProxyClientBytes()
 					/ (System.currentTimeMillis() - time);
 			System.out.println(errors);
+
 			System.out.println("In/out throughput to servers = " + tp + "KB/s");
 			System.out.println("In/out throughput to clients= " + tpc + "KB/s");
+			System.out.println("Errores=" + (Integer)errors.intValue()*100/connections);
 		} catch (final Exception e) {
 			e.printStackTrace();
 		}

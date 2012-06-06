@@ -1,23 +1,15 @@
 package application.filter;
 
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.imageio.ImageIO;
 import javax.ws.rs.core.MediaType;
 
 import model.HttpRequestImpl;
 import model.HttpResponseImpl;
 import application.Statistics;
-import exceptions.CloseException;
-import exceptions.ImageException;
 
 public abstract class Block {
 
@@ -71,12 +63,10 @@ public abstract class Block {
 	}
 
 	public boolean unlockUri(final String uri) {
-		System.out.println("UNLOCK URI: " + uri);
 		return this.uris.remove(uri);
 	}
 
 	public boolean blockUri(final String regex) {
-		System.out.println("URI BLOCK: " + regex);
 		return this.uris.add(regex);
 	}
 
@@ -123,7 +113,12 @@ public abstract class Block {
 	}
 
 	public boolean unlockIP(final String ip) {
-		return this.ips.remove(ip);
+
+		try {
+			return this.ips.remove(InetAddress.getByAddress(ip.getBytes()));
+		} catch (final UnknownHostException e) {
+			return false;
+		}
 	}
 
 	public abstract HttpResponseImpl doFilter(HttpRequestImpl req,
@@ -169,8 +164,6 @@ public abstract class Block {
 	private boolean isMediaTypeBlockable(final HttpResponseImpl response) {
 		for (final MediaType m : this.mediaTypes) {
 			if (response.getHeader("Content-Type") != null) {
-				System.out.println("Lista: " + m + "Response: "
-						+ response.getHeader("Content-Type"));
 				if (response.getHeader("Content-Type").matches(m.toString())) {
 					return true;
 				}
@@ -181,14 +174,12 @@ public abstract class Block {
 
 	private boolean urisBlocked(final HttpRequestImpl request) {
 		String requestUri;
-		for (String regex : this.uris) {
+		for (final String regex : this.uris) {
 			requestUri = "http://" + request.getHost()
 					+ request.getRequestURI().toString();
-			System.out.println("REQUEST: " + requestUri + " URI: " + regex);
-			String newString = regex.replace("*", "");
-				if (requestUri.startsWith(newString)) {
-					System.out.println("ENTROOOOOOOOOOOO!!!!!!!!");
-					return true;
+			final String newString = regex.replace("*", "");
+			if (requestUri.startsWith(newString)) {
+				return true;
 			}
 
 			if (requestUri.matches(regex)) {
@@ -216,8 +207,6 @@ public abstract class Block {
 
 		return false;
 	}
-
-
 
 	@Override
 	public abstract boolean equals(Object b);

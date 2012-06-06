@@ -17,13 +17,12 @@ public class IpBlock extends Block {
 
 	@Override
 	public HttpResponseImpl doFilter(final HttpRequestImpl req,
-			final HttpResponseImpl resp, InetAddress ip) {
+			final HttpResponseImpl resp, final InetAddress ip) {
 		if (!ip.equals(this.ip)) {
 			return null;
 		}
 		return this.filter(req, resp);
 	}
-
 
 	@Override
 	public boolean equals(final Object b) {
