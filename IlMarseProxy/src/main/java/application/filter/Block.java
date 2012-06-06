@@ -25,7 +25,7 @@ public abstract class Block {
 	boolean images;
 	boolean leet;
 	boolean access;
-	Set<String> ips;
+	Set<InetAddress> ips;
 	Set<URI> uris;
 	Set<MediaType> mediaTypes;
 	int maxSize;
@@ -34,7 +34,7 @@ public abstract class Block {
 		this.images = false;
 		this.leet = false;
 		this.access = true;
-		this.ips = new HashSet<String>();
+		this.ips = new HashSet<InetAddress>();
 		this.uris = new HashSet<URI>();
 		this.mediaTypes = new HashSet<MediaType>();
 		this.maxSize = 0;
@@ -112,7 +112,13 @@ public abstract class Block {
 	}
 
 	public boolean blockIP(final String ip) {
-		return this.ips.add(ip);
+		try {
+			final InetAddress address = InetAddress.getByAddress(ip.getBytes());
+			this.ips.add(address);
+		} catch (final UnknownHostException e) {
+			return false;
+		}
+		return true;
 	}
 
 	public boolean unlockIP(final String ip) {
@@ -202,16 +208,14 @@ public abstract class Block {
 		try {
 			requestIP = InetAddress.getByName(request.getHost());
 
-			for (final String ip : this.ips) {
-				final InetAddress listIP = InetAddress.getByName(ip);
-				if ((listIP.getHostAddress())
-						.equals(requestIP.getHostAddress())) {
+			for (final InetAddress ip : this.ips) {
+
+				if ((ip.getHostAddress()).equals(requestIP.getHostAddress())) {
 					return true;
 				}
 			}
 		} catch (final UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			return false;
 		}
 
 		return false;

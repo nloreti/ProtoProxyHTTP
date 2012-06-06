@@ -84,7 +84,6 @@ public class FilterHandler implements ConnectionHandler {
 	private String parse(final String request) {
 
 		final String[] parsedString = request.split(" ");
-		final boolean isCorrect = false;
 		String command = null;
 		String message = null;
 		Block block = null;
