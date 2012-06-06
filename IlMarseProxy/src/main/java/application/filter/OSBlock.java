@@ -28,7 +28,7 @@ public class OSBlock extends Block {
 	@Override
 	public boolean equals(Object b) {
 		if( b.getClass().equals(OSBlock.class) ){
-			return ((OSBlock)b).os == os;
+			return ((OSBlock)b).os.equals(os);
 		}
 		return false;
 	}
