@@ -15,7 +15,7 @@ public class SimpleBlock extends Block {
 	}
 	
 	@Override
-	public boolean equals(Block b) {
+	public boolean equals(Object b) {
 		System.out.println("asd");
 		return b.getClass().equals(SimpleBlock.class);
 	}

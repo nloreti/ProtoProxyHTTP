@@ -31,8 +31,9 @@ public class IpBlock extends Block {
 		return ip1.equals(ip2);
 	}
 
+
 	@Override
-	public boolean equals(Block b) {
+	public boolean equals(Object b) {
 		if( b.getClass().equals(IpBlock.class) ){
 			return ((IpBlock)b).ip == ip;
 		}
