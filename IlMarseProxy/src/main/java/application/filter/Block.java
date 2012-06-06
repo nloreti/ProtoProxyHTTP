@@ -181,18 +181,14 @@ public abstract class Block {
 
 	private boolean urisBlocked(final HttpRequestImpl request) {
 		String requestUri;
-		for (final String regex : this.uris) {
+		for (String regex : this.uris) {
 			requestUri = "http://" + request.getHost()
 					+ request.getRequestURI().toString();
 			System.out.println("REQUEST: " + requestUri + " URI: " + regex);
-			final String[] newString = regex.split("*");
-			if (newString.length > 1) {
-
-				System.out.println("NewString: " + newString[0]);
-				if (requestUri.startsWith(newString[0])) {
+			String newString = regex.replace("*", "");
+				if (requestUri.startsWith(newString)) {
 					System.out.println("ENTROOOOOOOOOOOO!!!!!!!!");
 					return true;
-				}
 			}
 
 			if (requestUri.matches(regex)) {
