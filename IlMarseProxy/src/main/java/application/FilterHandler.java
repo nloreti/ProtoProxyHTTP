@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -106,8 +107,12 @@ public class FilterHandler implements ConnectionHandler {
 				block = this.rf.getOsBlock(parsedString[1]);
 				message = this.parseAction(command, block);
 			} else if (this.isIP(parsedString[1])) {
-				block = this.rf.getIpBlock(parsedString[1]);
-				message = this.parseAction(command, block);
+				try {
+					block = this.rf.getIpBlock(parsedString[1]);
+					message = this.parseAction(command, block);
+				} catch (final UnknownHostException e) {
+					return "400 - IP invalida";
+				}
 			} else if (parsedString[1].equals("ALL")) {
 				block = this.rf.getSimpleBlock();
 				message = this.parseAction(command, block);

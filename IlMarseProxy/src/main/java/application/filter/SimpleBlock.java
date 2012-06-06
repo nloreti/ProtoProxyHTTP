@@ -1,5 +1,7 @@
 package application.filter;
 
+import java.net.InetAddress;
+
 import model.HttpRequestImpl;
 import model.HttpResponseImpl;
 
@@ -10,7 +12,7 @@ public class SimpleBlock extends Block {
 	}
 
 	@Override
-	public HttpResponseImpl doFilter(HttpRequestImpl req, HttpResponseImpl resp) {
+	public HttpResponseImpl doFilter(HttpRequestImpl req, HttpResponseImpl resp, InetAddress ip) {
 		return filter(req, resp);
 	}
 	
