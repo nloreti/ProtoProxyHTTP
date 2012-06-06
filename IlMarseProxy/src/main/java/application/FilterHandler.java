@@ -8,16 +8,18 @@ import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import application.filter.Block;
 
 public class FilterHandler implements ConnectionHandler {
 
-	RequestFilter rf;
+	RequestFilter rf = RequestFilter.getInstance();
 	private DinamicProxyConfiguration configuration = DinamicProxyConfiguration
 			.getInstance();
 
 	private String user;
 	private String pass;
 
+	@Override
 	public void handle(final Socket s) throws IOException {
 		// InputStream in = s.getInputStream();
 		// OutputStream out = s.getOutputStream();
@@ -37,6 +39,8 @@ public class FilterHandler implements ConnectionHandler {
 				response = fromClient.readLine();
 				if (response.contains(this.pass)) {
 					auth = true;
+				} else {
+					toClient.println("400 - Wrong Username or Password");
 				}
 			}
 		} while (!response.equals("BYE!") && !auth);
@@ -48,106 +52,180 @@ public class FilterHandler implements ConnectionHandler {
 		s.close();
 	}
 
+	public boolean isBrowser(final String browser) {
+		return browser.equals("FIREFOX") || browser.equals("EXPLORER")
+				|| browser.equals("CHROME") || browser.equals("SAFARI");
+	}
+
+	public boolean isOS(final String OS) {
+		return OS.equals("UBUNTU") || OS.equals("WINDOWS")
+				|| OS.equals("MACOS");
+	}
+
+	public boolean isIP(final String IP) {
+		return IP.matches("%d.%d.%d.%d") || IP.matches("%d.*.*.*")
+				|| IP.matches("%d.%d.*.*") || IP.matches("%d.%d.%d.*");
+	}
+
 	private String parse(final String request) {
-		final RequestFilter rf = RequestFilter.getInstance();
-		if (request.equals("HELP")) {
-			return "Manual for usage:\64Type any command from the following list:\64\tBLOCK ACCESS blocks every access from the proxy.\64\tUNLOCK ACCESS grants access\64\tL33T ON turns l33t mode on\64\tL33T OFF turns l33t mode off\64\tBLOCK IP [ip] blocks the given [ip] or group of ip's\64\tUNLOCK IP [ip] unlocks the given [ip] or group of ip's\64\tBLOCK URI [uri] blocks the given [uri] or regular expression for uri\64\tUNLOCK URI [uri] unlocks the given uri or regular expression for uri's\64\tSET MAXSIZE [size] sets a max quantity of bytes that can pass throught the proxy, set on 0 for unlimited amount\64\tIMAGES ON turns on the flipping for images\64\tIMAGES OFF turns off the flipping for images\64\tBLOCK MEDIATYPE [media type] blocks the given [media type]\64\tUNLOCK MEDIATYPE [mediatype] unlocks the given [media type]\64End\64";
-		} else if (request.equals("BLOCK ACCESS")) {
-			if (!rf.access()) {
+
+		final String[] parsedString = request.split(" ");
+		final boolean isCorrect = false;
+		String command = null;
+		String message = null;
+		Block block = null;
+		System.out.println("Longitud: " + parsedString.length);
+		if (parsedString.length == 4 && parsedString[0].equals("FOR")) {
+			command = parsedString[2] + " " + parsedString[3];
+			if (this.isBrowser(parsedString[1])) {
+				block = this.rf.getBrowserBlock(parsedString[1]);
+				message = this.parseAction(command, block);
+			} else if (this.isOS(parsedString[1])) {
+				block = this.rf.getOsBlock(parsedString[1]);
+				message = this.parseAction(command, block);
+			} else if (this.isIP(parsedString[1])) {
+				block = this.rf.getIpBlock(parsedString[1]);
+				message = this.parseAction(command, block);
+			}
+		}
+		if (message == null) {
+			return "400 - Comando invalido";
+		}
+		return "200 - " + message;
+
+	}
+
+	public String parseAction(final String request, final Block block) {
+		// if (request.equals("HELP")) {
+		// return
+		// "Manual for usage:\64Type any command from the following list:\64\tBLOCK ACCESS blocks every access from the proxy.\64\tUNLOCK ACCESS grants access\64\tL33T ON turns l33t mode on\64\tL33T OFF turns l33t mode off\64\tBLOCK IP [ip] blocks the given [ip] or group of ip's\64\tUNLOCK IP [ip] unlocks the given [ip] or group of ip's\64\tBLOCK URI [uri] blocks the given [uri] or regular expression for uri\64\tUNLOCK URI [uri] unlocks the given uri or regular expression for uri's\64\tSET MAXSIZE [size] sets a max quantity of bytes that can pass throught the proxy, set on 0 for unlimited amount\64\tIMAGES ON turns on the flipping for images\64\tIMAGES OFF turns off the flipping for images\64\tBLOCK MEDIATYPE [media type] blocks the given [media type]\64\tUNLOCK MEDIATYPE [mediatype] unlocks the given [media type]\64End\64";
+		//
+		// } else
+		if (request.equals("BLOCK ACCESS")) {
+			if (!block.access()) {
+
 				return "ACCESS IS ALREADY BLOCKED";
+
 			}
-			rf.accessOff();
+			block.accessOff();
 			return "ACCESS BLOCKED";
+
 		} else if (request.equals("UNLOCK ACCESS")) {
-			if (rf.access()) {
+			if (block.access()) {
 				return "ACCESS IS ALREADY UNLOCKED";
+
 			}
-			rf.accessOn();
+			block.accessOn();
 			return "ACCESS UNLOCKED";
+
 		} else if (request.equals("L33T ON")) {
-			if (rf.leet()) {
+			if (block.leet()) {
 				return "L33T IS ALREADY ON";
+
 			}
-			rf.leetOn();
+			block.leetOn();
 			return "L33T IS NOW ON";
+
 		} else if (request.equals("L33T OFF")) {
-			if (!rf.leet()) {
+			if (!block.leet()) {
 				return "L33T IS ALREADY OFF";
+
 			}
-			rf.leetOff();
+			block.leetOff();
 			return "L33T IS NOW OFF";
+
 		} else if (request.equals("IMAGES OFF")) {
-			if (!rf.images()) {
+			if (!block.images()) {
 				return "IMAGES ARE ALREADY OFF";
+
 			}
-			rf.imagesOff();
+			block.imagesOff();
 			return "IMAGES WILL STOP ROTATING";
+
 		} else if (request.equals("IMAGES ON")) {
-			if (rf.images()) {
+			if (block.images()) {
 				return "IMAGES ARE ALREADY ON";
+
 			}
-			rf.imagesOn();
+			block.imagesOn();
 			return "IMAGES WILL NOW ROTATE";
+
 		} else if (request.startsWith("BLOCK IP ")) {
 			final String ip = request.substring(9);
 			if (!ip.matches("%d.%d.%d.%d")) {
 				return "INVALID IP";
+
 			}
-			if (!rf.blockIP(ip)) {
+			if (!block.blockIP(ip)) {
 				return ip + " IS ALREADY BLOCKED";
+
 			}
 			return ip + " BLOCKED";
+
 		} else if (request.startsWith("UNLOCK IP ")) {
 			final String ip = request.substring(10);
 			if (!ip.matches("%d.%d.%d.%d")) {
 				return "INVALID IP";
+
 			}
-			if (rf.unlockIP(ip)) {
+			if (block.unlockIP(ip)) {
 				return ip + " NOT BLOCKED";
+
 			}
 			return ip + " UNLOCKED";
+
 		} else if (request.startsWith("BLOCK URI ")) {
 			final String uri = request.substring(10);
 			// urivalidator!
 			if (false) {
 				return uri + " IS NOT A VALID URI";
+
 			}
 			try {
-				if (!rf.blockUri(new URI(uri))) {
+				if (!block.blockUri(new URI(uri))) {
 					return uri + " IS ALREADY BLOCKED";
+
 				}
 			} catch (final URISyntaxException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			return uri + " HAS BEEN BLOCKED";
+
 		} else if (request.startsWith("UNLOCK URI ")) {
 			final String uri = request.substring(11);
 			// urivalidator!
 			if (false) {
 				return uri + "IS NOT A VALID URI";
+
 			}
 			try {
-				if (!rf.unlockUri(new URI(uri))) {
+				if (!block.unlockUri(new URI(uri))) {
 					return uri + "NOT BLOCKED";
+
 				}
 			} catch (final URISyntaxException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			return uri + "UNLOCKED";
+
 		} else if (request.startsWith("BLOCK MEDIATYPE ")) {
 			final String mediaType = request.substring(16);
-			if (!rf.blockMediaType(mediaType)) {
+			if (!block.blockMediaType(mediaType)) {
 				return mediaType + " IS ALREADY BLOCKED";
+
 			}
 			return mediaType + " BLOCKED";
+
 		} else if (request.startsWith("UNLOCK MEDIATYPE ")) {
 			final String mediaType = request.substring(17);
-			if (!rf.unlockMediaType(mediaType)) {
+			if (!block.unlockMediaType(mediaType)) {
 				return mediaType + " NOT BLOCKED";
+
 			}
 			return mediaType + " UNLOCKED";
+
 		} else if (request.startsWith("SET MAXSIZE ")) {
 			final String maxSize = request.substring(12);
 			int ms;
@@ -155,11 +233,14 @@ public class FilterHandler implements ConnectionHandler {
 				ms = Integer.valueOf(maxSize);
 			} catch (final Exception e) {
 				return "NOT A VALID INTEGER";
+
 			}
-			if (rf.setMaxSize(ms)) {
+			if (block.setMaxSize(ms)) {
 				return "MAXSIZE SET TO " + maxSize;
+
 			}
 			return "MAXSIZE IS NOW OFF";
+
 		} else if (request.startsWith("GET BLOCKS")) { // A mi gusto tenemos que
 														// hacer un solo
 														// servidor que provea
@@ -173,27 +254,35 @@ public class FilterHandler implements ConnectionHandler {
 					+ Statistics.getInstance().getContentBlocks()
 					+ "\r\nTOTAL SIZE BLOCKS: "
 					+ Statistics.getInstance().getSizeBlocks();
+
 		} else if (request.startsWith("GET OPEN CONNECTIONS")) {
 			return "TOTAL OPEN CONNECTIONS:"
 					+ Statistics.getInstance().getOpenConnections();
+
 		} else if (request.startsWith("GET CLIENT BYTES TRANSMITED")) {
 			return "TOTAL CLIENT BYTES TRANSMITED:"
 					+ Statistics.getInstance().getProxyClientBytes();
+
 		} else if (request.startsWith("GET SERVERS BYTES TRANSMITED")) {
 			return "TOTAL SERVERS BYTES TRANSMITED:"
 					+ Statistics.getInstance().getProxyServerBytes();
+
 		} else if (request.startsWith("GET TRANSFORMATIONS")) {
 			return "TOTAL TRANSFORMATIONS:"
 					+ Statistics.getInstance().getTransformations();
+
 		} else if (request.startsWith("GET TOTAL BYTES TRANSMITED")) {
 			return "TOTAL BYTES TRANSMITED:"
 					+ String.valueOf(Statistics.getInstance()
 							.getProxyClientBytes()
 							+ Statistics.getInstance().getProxyServerBytes());
+
 		} else if (request.equals("EXIT")) {
 			return "BYE!";
+
 		} else {
 			return "INVALID COMMAND, TYPE HELP FOR A LIST OF COMMANDS";
+
 		}
 	}
 }

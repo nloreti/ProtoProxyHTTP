@@ -13,9 +13,11 @@ import model.HttpRequestImpl;
 import model.HttpResponseImpl;
 import application.DinamicProxyConfiguration;
 import application.Statistics;
+import exceptions.CloseException;
 import exceptions.ConnectionException;
 import exceptions.EncodingException;
 import exceptions.MessageException;
+import exceptions.RequestException;
 import exceptions.ResponseException;
 
 public class ConnectionImpl implements Connection {
@@ -45,19 +47,19 @@ public class ConnectionImpl implements Connection {
 			final InetAddress addr = InetAddress.getByName(hostInfo[0]);
 			this.setupConnection(addr, port);
 		} catch (final Exception e) {
-			System.out.println("Error en Connection");
+			throw new CloseException("Cierre de la conexion");
 		}
 	}
 
-	private void setupConnection(final InetAddress ip, final int port) {
+	private void setupConnection(final InetAddress ip, final int port)
+			throws CloseException {
 		try {
 			this.socket = new Socket(ip, port);
 			this.socket.setSoTimeout(this.configuration.getTimeOutToServer());
-//			Statistics.getInstance().connectionOpened();
 		} catch (final SocketException e) {
-			e.printStackTrace();
+			throw new CloseException("Cierre de la conexion");
 		} catch (final IOException e) {
-			e.printStackTrace();
+			throw new CloseException("Cierre de la conexion");
 		}
 	}
 
@@ -67,8 +69,7 @@ public class ConnectionImpl implements Connection {
 			this.socket.setSoTimeout(this.configuration.getTimeOutToClient());
 			Statistics.getInstance().connectionOpened();
 		} catch (final SocketException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new CloseException("Cierre de la conexion");
 		}
 
 	}
@@ -79,8 +80,7 @@ public class ConnectionImpl implements Connection {
 			this.socket.setSoTimeout(this.configuration.getTimeOutToServer());
 			Statistics.getInstance().connectionOpened();
 		} catch (final IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new CloseException("Cierre de la conexion");
 		}
 
 	}
@@ -114,8 +114,7 @@ public class ConnectionImpl implements Connection {
 			out = this.socket.getOutputStream();
 			request.writeStream(out);
 		} catch (final IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new RequestException("Fallo al enviar el Request");
 		}
 	}
 
@@ -126,7 +125,7 @@ public class ConnectionImpl implements Connection {
 		try {
 			stream = this.socket.getInputStream();
 		} catch (final IOException e) {
-			System.out.println("Fallo el recieve de ConnectionImpl");
+			throw new CloseException("Fallo el recieve de Connection");
 		}
 		return new HttpResponseImpl(stream);
 
@@ -136,11 +135,9 @@ public class ConnectionImpl implements Connection {
 		try {
 			return this.socket.getOutputStream();
 		} catch (final IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-
+			throw new CloseException(
+					"Cierre de la conexion por fallo del Stream");
 		}
-		return null;
 	}
 
 	@Override
@@ -149,11 +146,9 @@ public class ConnectionImpl implements Connection {
 		try {
 			return this.socket.getInputStream();
 		} catch (final IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-
+			throw new CloseException(
+					"Cierre de la conexion por fallo del Stream");
 		}
-		return null;
 	}
 
 	@Override
@@ -172,9 +167,8 @@ public class ConnectionImpl implements Connection {
 			this.socket.close();
 			Statistics.getInstance().connectionClosed();
 		} catch (final IOException e) {
-			// TODO Auto-generated catch block
 			Statistics.getInstance().connectionClosed();
-			e.printStackTrace();
+			throw new CloseException("Cierre de la conexion tras fallo");
 		}
 	}
 
