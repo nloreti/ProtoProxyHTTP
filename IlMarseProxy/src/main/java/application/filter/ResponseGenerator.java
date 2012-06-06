@@ -13,7 +13,7 @@ public class ResponseGenerator {
 	}
 
 	public static HttpResponseImpl generateBlockedResponseByUserAgent(
-			HttpResponseImpl response) {
+			final HttpResponseImpl response) {
 		return generateBlockedResponse("The user agent is blocked", response);
 	}
 
@@ -53,9 +53,11 @@ public class ResponseGenerator {
 		try {
 			final String body = "<title>Feedback Page</title><html><body><h1>"
 					+ string + "<h1></body></html>";
+			response.setStatusCode(404);
+			response.setReasonPhrase("Forbidden");
+			response.removeHeader("Transfer-Encoding");
 			response.removeHeader("Content-Length");
-			response.addHeader("Content-Length",
-					String.valueOf(body.length()));
+			response.addHeader("Content-Length", String.valueOf(body.length()));
 			response.removeHeader("Content-Encoding");
 			response.setBody(body.getBytes());
 		} catch (final Exception e) {

@@ -81,8 +81,8 @@ public class FilterHandler implements ConnectionHandler {
 	}
 
 	public boolean isURI(final String URI) {
-		// return URI.matches("http://%s");
-		return true;
+		return URI.startsWith("http://");
+
 	}
 
 	private String parse(final String request) {
