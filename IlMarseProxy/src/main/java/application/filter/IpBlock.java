@@ -12,7 +12,7 @@ public class IpBlock extends Block {
 
 	public IpBlock(final String ip) throws UnknownHostException {
 		super();
-		this.ip = InetAddress.getByAddress(ip.getBytes());
+		this.ip = InetAddress.getByName(ip);
 	}
 
 	@Override

@@ -108,7 +108,7 @@ public class FilterHandler implements ConnectionHandler {
 					block = this.rf.getIpBlock(parsedString[1]);
 					message = this.parseAction(command, block);
 				} catch (UnknownHostException e) {
-					return "400 - Comando invalido";
+					return "400 - IP invalida";
 				}
 			} else if (parsedString[1].equals("ALL")) {
 				block = this.rf.getSimpleBlock();
