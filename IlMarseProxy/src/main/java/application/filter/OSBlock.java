@@ -10,6 +10,7 @@ public class OSBlock extends Block {
 	private OperatingSystem os;
 	
 	public OSBlock(OperatingSystem os) {
+		super();
 		this.os = os;
 	}
 	

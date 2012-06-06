@@ -8,28 +8,37 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.ws.rs.core.MediaType;
 
-import exceptions.CloseException;
-import exceptions.ImageException;
-
-import application.Statistics;
-
 import model.HttpRequestImpl;
 import model.HttpResponseImpl;
+import application.Statistics;
+import exceptions.CloseException;
+import exceptions.ImageException;
 
 public abstract class Block {
 
 	boolean images;
 	boolean leet;
 	boolean access;
-	List<String> ips;
-	List<URI> uris;
-	List<MediaType> mediaTypes;
+	Set<String> ips;
+	Set<URI> uris;
+	Set<MediaType> mediaTypes;
 	int maxSize;
+	
+	public Block() {
+		images = false;
+		leet = false;
+		access = true;
+		ips = new HashSet<String>();
+		uris = new HashSet<URI>();
+		mediaTypes = new HashSet<MediaType>();
+		maxSize = 0;
+	}
 
 	public boolean blockMediaType(final String mediaType) {
 		try {
@@ -156,13 +165,12 @@ public abstract class Block {
 	}
 
 	private boolean isMediaTypeBlockable(final HttpResponseImpl response) {
-		int i;
-		for (i = 0; i < this.mediaTypes.size(); i++) {
+		for (MediaType m: mediaTypes) {
 			if (response.getHeader("Content-Type") != null) {
-				System.out.println("Lista: " + this.mediaTypes.get(i)
+				System.out.println("Lista: " + m
 						+ "Response: " + response.getHeader("Content-Type"));
 				if (response.getHeader("Content-Type").matches(
-						this.mediaTypes.get(i).toString())) {
+						m.toString())) {
 					return true;
 				}
 			}
@@ -171,9 +179,8 @@ public abstract class Block {
 	}
 
 	private boolean urisBlocked(final HttpRequestImpl request) {
-		int i;
-		for (i = 0; i < this.uris.size(); i++) {
-			if (request.getRequestURI().equals(this.uris.get(i))) {
+		for (URI uri: uris) {
+			if (request.getRequestURI().equals(uri)) {
 				return true;
 			}
 		}
@@ -182,14 +189,12 @@ public abstract class Block {
 
 	private boolean destinationIPIsBlocked(final HttpRequestImpl request) {
 
-		int i = 0;
 		InetAddress requestIP;
 		try {
 			requestIP = InetAddress.getByName(request.getHost());
 
-			for (i = 0; i < this.ips.size(); i++) {
-				final InetAddress listIP = InetAddress.getByName(this.ips
-						.get(i));
+			for (String ip: ips) {
+				final InetAddress listIP = InetAddress.getByName(ip);
 				if ((listIP.getHostAddress())
 						.equals(requestIP.getHostAddress())) {
 					return true;

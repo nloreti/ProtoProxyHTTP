@@ -29,10 +29,6 @@ public class RequestFilter {
 		blocks = new ArrayList<Block>();
 	}
 
-	public HttpResponseImpl filter(final HttpRequestImpl request) {
-		return null;
-	}
-
 	public HttpResponseImpl doFilter(final HttpRequestImpl request,
 			final HttpResponseImpl response) {
 		for (Block b : blocks) {
@@ -47,6 +43,7 @@ public class RequestFilter {
 		Block b = new IpBlock(ip);
 		if( blocks.contains(b) )
 			return blocks.get(blocks.indexOf(b));
+		blocks.add(b);
 		return b;
 	}
 	
@@ -54,6 +51,7 @@ public class RequestFilter {
 		Block b = new BrowserBlock(Browser.valueOf(browser));
 		if( blocks.contains(b) )
 			return blocks.get(blocks.indexOf(b));
+		blocks.add(b);
 		return b;
 	}
 	
@@ -61,6 +59,7 @@ public class RequestFilter {
 		Block b = new OSBlock(OperatingSystem.valueOf(os));
 		if( blocks.contains(b) )
 			return blocks.get(blocks.indexOf(b));
+		blocks.add(b);
 		return b;
 	}
 	
@@ -68,6 +67,7 @@ public class RequestFilter {
 		Block b = new SimpleBlock();
 		if( blocks.contains(b) )
 			return blocks.get(blocks.indexOf(b));
+		blocks.add(b);
 		return b;
 	}
 }

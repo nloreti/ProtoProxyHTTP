@@ -8,6 +8,7 @@ public class IpBlock extends Block {
 	private String ip;
 	
 	public IpBlock(String ip) {
+		super();
 		this.ip = ip;
 	}
 	

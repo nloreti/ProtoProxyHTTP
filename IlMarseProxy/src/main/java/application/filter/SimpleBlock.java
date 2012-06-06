@@ -6,6 +6,7 @@ import model.HttpResponseImpl;
 public class SimpleBlock extends Block {
 
 	public SimpleBlock() {
+		super();
 	}
 
 	@Override
@@ -15,6 +16,12 @@ public class SimpleBlock extends Block {
 	
 	@Override
 	public boolean equals(Block b) {
+		System.out.println("asd");
 		return b.getClass().equals(SimpleBlock.class);
+	}
+	
+	@Override
+	public int hashCode(){
+		return 0;
 	}
 }

@@ -10,6 +10,7 @@ public class BrowserBlock extends Block {
 	Browser browser;
 	
 	public BrowserBlock(Browser browser) {
+		super();
 		this.browser = browser;
 	}
 	

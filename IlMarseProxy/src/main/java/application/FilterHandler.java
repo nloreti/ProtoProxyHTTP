@@ -86,6 +86,9 @@ public class FilterHandler implements ConnectionHandler {
 			} else if (this.isIP(parsedString[1])) {
 				block = this.rf.getIpBlock(parsedString[1]);
 				message = this.parseAction(command, block);
+			} else if (parsedString[1].equals("ALL")) {
+				block = this.rf.getSimpleBlock();
+				message = this.parseAction(command, block);
 			}
 		}
 		if (message == null) {
@@ -145,7 +148,6 @@ public class FilterHandler implements ConnectionHandler {
 		} else if (request.equals("IMAGES ON")) {
 			if (block.images()) {
 				return "IMAGES ARE ALREADY ON";
-
 			}
 			block.imagesOn();
 			return "IMAGES WILL NOW ROTATE";
