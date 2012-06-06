@@ -22,8 +22,9 @@ public class BrowserBlock extends Block {
 		return filter( req, resp );
 	}
 
+
 	@Override
-	public boolean equals(Block b) {
+	public boolean equals(Object b) {
 		if( b.getClass().equals(BrowserBlock.class) ){
 			return ((BrowserBlock)b).browser == browser;
 		}

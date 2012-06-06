@@ -148,7 +148,7 @@ public abstract class Block {
 						.getRequestURI().toString(), resp);
 			}
 			if (resp.getContentLength() != null) {
-				if (Integer.valueOf(resp.getContentLength()) > this.maxSize) {
+				if ( maxSize != 0 && Integer.valueOf(resp.getContentLength()) > this.maxSize) {
 					Statistics.getInstance().incrementSizeBlocks();
 					return ResponseGenerator.generateBlockedResponse(this.maxSize, resp);
 				}
@@ -269,5 +269,5 @@ public abstract class Block {
 		return resp.toByteArray();
 	}
 	
-	public abstract boolean equals(Block b);
+	public abstract boolean equals(Object b);
 }

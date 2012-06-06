@@ -53,8 +53,8 @@ public class ResponseGenerator {
 		try {
 			final String body = "<title>Feedback Page</title><html><body><h1>"
 					+ string + "<h1></body></html>";
-
-			response.appendHeader("Content-Length",
+			response.removeHeader("Content-Length");
+			response.addHeader("Content-Length",
 					String.valueOf(body.length()));
 			response.removeHeader("Content-Encoding");
 			response.setBody(body.getBytes());
