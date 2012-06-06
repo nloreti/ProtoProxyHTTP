@@ -107,5 +107,5 @@ Tabla de contenidos
 			| GET OPEN CONNECTIONS 			devuelve la cantidad de conexiones abiertas
 			| GET CLIENT BYTES TRANSMITED 	devuelve la cantidad de bytes que transmitió el cliente
 			| GET SERVER BYTES TRANSMITED 	devuelve la cantidad de bytes que transmitió el servidor
-			| GET TRANSFORMATIONS 			devuelve las transformaciones activas
+			| GET TRANSFORMATIONS 			devuelve la cantidad de transformaciones activas
 			| GET TOTAL BYTES TRANSMITED	devuelve la cantidad total de bytes transmitidos
