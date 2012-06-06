@@ -166,9 +166,9 @@ public class ThroughputTest {
 			es.shutdownNow();
 			double tp = (Statistics.getInstance().getProxyServerBytes()/(System.currentTimeMillis()-time));
 			double tpc = Statistics.getInstance().getProxyClientBytes()/(System.currentTimeMillis()-time);
-			System.out.println(errors);
 			System.out.println("In/out throughput to servers = " + tp + "KB/s");
 			System.out.println("In/out throughput to clients= " + tpc + "KB/s");
+			System.out.println("Errores=" + (Integer)errors.intValue()*100/connections);
 		} catch (final Exception e) {
 			e.printStackTrace();
 		}
