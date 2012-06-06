@@ -65,8 +65,8 @@ public class FilterHandler implements ConnectionHandler {
 	}
 
 	public boolean isOS(final String OS) {
-		return OS.equals("UBUNTU") || OS.equals("WINDOWS")
-				|| OS.equals("MACOS");
+		return OS.equals("LINUX") || OS.equals("WINDOWS")
+				|| OS.equals("MAC_OS_X");
 	}
 
 	public boolean isIP(final String IP) {
@@ -89,8 +89,14 @@ public class FilterHandler implements ConnectionHandler {
 		String message = null;
 		Block block = null;
 		System.out.println("Longitud: " + parsedString.length);
-		if (parsedString.length >= 4 && parsedString[0].equals("FOR")) {
-			command = parsedString[2] + " " + parsedString[3];
+		if (parsedString.length >= 4 && parsedString.length <= 5
+				&& parsedString[0].equals("FOR")) {
+			if (parsedString.length == 5) {
+				command = parsedString[2] + " " + parsedString[3] + " "
+						+ parsedString[4];
+			} else {
+				command = parsedString[2] + " " + parsedString[3];
+			}
 			if (this.isBrowser(parsedString[1])) {
 				block = this.rf.getBrowserBlock(parsedString[1]);
 				message = this.parseAction(command, block);
@@ -229,7 +235,8 @@ public class FilterHandler implements ConnectionHandler {
 		} else if (request.startsWith("BLOCK MEDIATYPE ")) {
 			final String mediaType = request.substring(16);
 			if (!block.blockMediaType(mediaType)) {
-				return mediaType + " IS ALREADY BLOCKED";
+				return mediaType
+						+ " IS ALREADY BLOCKED OR ITS NOT A VALID TYPE";
 
 			}
 			return mediaType + " BLOCKED";

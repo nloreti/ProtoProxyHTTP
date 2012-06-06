@@ -29,28 +29,33 @@ public abstract class Block {
 	Set<URI> uris;
 	Set<MediaType> mediaTypes;
 	int maxSize;
-	
+
 	public Block() {
-		images = false;
-		leet = false;
-		access = true;
-		ips = new HashSet<String>();
-		uris = new HashSet<URI>();
-		mediaTypes = new HashSet<MediaType>();
-		maxSize = 0;
+		this.images = false;
+		this.leet = false;
+		this.access = true;
+		this.ips = new HashSet<String>();
+		this.uris = new HashSet<URI>();
+		this.mediaTypes = new HashSet<MediaType>();
+		this.maxSize = 0;
 	}
 
 	public boolean blockMediaType(final String mediaType) {
+		MediaType m;
 		try {
-			MediaType m = MediaType.valueOf(mediaType);
-			return this.mediaTypes.add(m);
-		} catch (IllegalArgumentException e) {
+			m = MediaType.valueOf(mediaType);
+		} catch (final IllegalArgumentException e) {
 			return false;
 		}
+		if (m == null) {
+			return false;
+		}
+		return this.mediaTypes.add(m);
 	}
 
 	public boolean unlockMediaType(final String mediaType) {
-		return this.mediaTypes.remove(mediaType);
+		final MediaType m = MediaType.valueOf(mediaType);
+		return this.mediaTypes.remove(m);
 	}
 
 	public boolean images() {
@@ -113,10 +118,12 @@ public abstract class Block {
 	public boolean unlockIP(final String ip) {
 		return this.ips.remove(ip);
 	}
-	
-	public abstract HttpResponseImpl doFilter(HttpRequestImpl req, HttpResponseImpl resp);
-	
-	HttpResponseImpl filter(HttpRequestImpl req, HttpResponseImpl resp){
+
+	public abstract HttpResponseImpl doFilter(HttpRequestImpl req,
+			HttpResponseImpl resp);
+
+	HttpResponseImpl filter(final HttpRequestImpl req,
+			final HttpResponseImpl resp) {
 		try {
 			if (!this.access) {
 				return ResponseGenerator.generateBlockedResponse(resp);
@@ -124,8 +131,8 @@ public abstract class Block {
 			if (this.destinationIPIsBlocked(req)) {
 				Statistics.getInstance().incrementIpBlocks();
 				return ResponseGenerator.generateBlockedResponseByIp(
-						InetAddress.getByName(req.getHost())
-								.getHostAddress(), resp);
+						InetAddress.getByName(req.getHost()).getHostAddress(),
+						resp);
 			}
 			if (this.images) {
 				if (resp.containsType("image/.*")) {
@@ -148,15 +155,18 @@ public abstract class Block {
 						.getRequestURI().toString(), resp);
 			}
 			if (resp.getContentLength() != null) {
-				if ( maxSize != 0 && Integer.valueOf(resp.getContentLength()) > this.maxSize) {
+				if (this.maxSize != 0
+						&& Integer.valueOf(resp.getContentLength()) > this.maxSize) {
 					Statistics.getInstance().incrementSizeBlocks();
-					return ResponseGenerator.generateBlockedResponse(this.maxSize, resp);
+					return ResponseGenerator.generateBlockedResponse(
+							this.maxSize, resp);
 				}
 			}
-		
+
 			if (this.isMediaTypeBlockable(resp)) {
 				Statistics.getInstance().incrementContentBlocks();
-				return ResponseGenerator.generateBlockedResponseByMediaType(resp);
+				return ResponseGenerator
+						.generateBlockedResponseByMediaType(resp);
 			}
 		} catch (final UnknownHostException e) {
 			e.printStackTrace();
@@ -165,12 +175,11 @@ public abstract class Block {
 	}
 
 	private boolean isMediaTypeBlockable(final HttpResponseImpl response) {
-		for (MediaType m: mediaTypes) {
+		for (final MediaType m : this.mediaTypes) {
 			if (response.getHeader("Content-Type") != null) {
-				System.out.println("Lista: " + m
-						+ "Response: " + response.getHeader("Content-Type"));
-				if (response.getHeader("Content-Type").matches(
-						m.toString())) {
+				System.out.println("Lista: " + m + "Response: "
+						+ response.getHeader("Content-Type"));
+				if (response.getHeader("Content-Type").matches(m.toString())) {
 					return true;
 				}
 			}
@@ -179,7 +188,7 @@ public abstract class Block {
 	}
 
 	private boolean urisBlocked(final HttpRequestImpl request) {
-		for (URI uri: uris) {
+		for (final URI uri : this.uris) {
 			if (request.getRequestURI().equals(uri)) {
 				return true;
 			}
@@ -193,7 +202,7 @@ public abstract class Block {
 		try {
 			requestIP = InetAddress.getByName(request.getHost());
 
-			for (String ip: ips) {
+			for (final String ip : this.ips) {
 				final InetAddress listIP = InetAddress.getByName(ip);
 				if ((listIP.getHostAddress())
 						.equals(requestIP.getHostAddress())) {
@@ -268,6 +277,7 @@ public abstract class Block {
 
 		return resp.toByteArray();
 	}
-	
+
+	@Override
 	public abstract boolean equals(Object b);
 }
