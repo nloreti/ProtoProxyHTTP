@@ -284,7 +284,7 @@ public class FilterHandler implements ConnectionHandler {
 					+ Statistics.getInstance().getProxyClientBytes();
 
 		} else if (request.startsWith("GET SERVER BYTES TRANSMITED")) {
-			return "TOTAL SERVERS BYTES TRANSMITED:"
+			return "TOTAL SERVER BYTES TRANSMITED:"
 					+ Statistics.getInstance().getProxyServerBytes();
 
 		} else if (request.startsWith("GET TRANSFORMATIONS")) {
