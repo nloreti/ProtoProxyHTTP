@@ -9,6 +9,7 @@ import model.HttpRequestImpl;
 import model.HttpResponseImpl;
 
 import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Logger;
 
 import connection.CollectionConnectionHandler;
 import connection.CollectionConnectionHandlerImpl;
@@ -32,7 +33,7 @@ public class ResolverThread implements Runnable {
 	// Para conexiones persistentes
 	boolean proxyKeepAlive = true;
 	// Logger
-	// static final Logger logger = Logger.getLogger(ResolverThread.class);
+	static final Logger logger = Logger.getLogger(ResolverThread.class);
 	// Se usa para el Max-Fowards para el Proxy Chain
 	private static Integer MAX_FORWARDS = 5;
 
@@ -73,16 +74,13 @@ public class ResolverThread implements Runnable {
 				return;
 			}
 
-
-//			fullLogger.log("Request: " + request + "\n\n\n\n\n");
-//			fullLogger.log("Response: " + response);
-//			humanLogger.log(request.getLogString());
-//			humanLogger.log(response.getLogString());
+			logger.debug("Request: " + request + "\n\n\n\n\n");
+			logger.debug("Response: " + response);
 			// Retornamos la respuesta.
 			try {
-				boolean respKeepAlive = this.keepAlive(response);
-//				System.out.println("resp: " + respKeepAlive);
-//				respKeepAlive = true;
+				final boolean respKeepAlive = this.keepAlive(response);
+				// System.out.println("resp: " + respKeepAlive);
+				// respKeepAlive = true;
 
 				this.setHeaders(response, request);
 				this.sendResponse(response);

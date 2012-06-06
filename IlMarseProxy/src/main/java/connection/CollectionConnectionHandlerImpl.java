@@ -22,6 +22,7 @@ public class CollectionConnectionHandlerImpl implements
 
 	}
 
+	@Override
 	public synchronized EndPointConnectionHandler getEndPointConnectionHandler(
 			final String host) {
 		final InetSocketAddress address = this.getInetSocketAddress(host);

@@ -66,9 +66,9 @@ public class RequestFilter {
 
 	public boolean blockMediaType(final String mediaType) {
 		try {
-			MediaType m = MediaType.valueOf(mediaType);
+			final MediaType m = MediaType.valueOf(mediaType);
 			return this.mediaTypes.add(m);
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			return false;
 		}
 	}
@@ -286,6 +286,8 @@ public class RequestFilter {
 
 	private HttpResponseImpl generateBlockedResponseByIp(
 			final String destinationIp, final HttpResponseImpl response) {
+		response.setStatusCode(403);
+		response.setReasonPhrase("Forbidden");
 		return this.generateBlockedResponse(
 				"This ip has been blocked by the proxy administrator. IP: "
 						+ destinationIp, response);
@@ -295,6 +297,7 @@ public class RequestFilter {
 			final HttpResponseImpl response) {
 
 		response.setStatusCode(406);
+		response.setReasonPhrase("Not Acceptable");
 		response.replaceHeader("Content-Length", "0");
 		final String body = "";
 		response.setBody(body.getBytes());
@@ -303,6 +306,8 @@ public class RequestFilter {
 
 	private HttpResponseImpl generateBlockedResponse(
 			final HttpResponseImpl response) {
+		response.setStatusCode(403);
+		response.setReasonPhrase("Forbidden");
 		return this
 				.generateBlockedResponse(
 						"The access has been completely blocked by the proxy administrator.",
@@ -311,6 +316,8 @@ public class RequestFilter {
 
 	private HttpResponseImpl generateBlockedResponseByUri(
 			final String requestURI, final HttpResponseImpl response) {
+		response.setStatusCode(403);
+		response.setReasonPhrase("Forbidden");
 		return this.generateBlockedResponse(
 				"This URI has been blocked by the proxy administrator. URI: "
 						+ requestURI, response);
@@ -318,6 +325,8 @@ public class RequestFilter {
 
 	private HttpResponseImpl generateBlockedResponse(final int size,
 			final HttpResponseImpl response) {
+		response.setStatusCode(403);
+		response.setReasonPhrase("Forbidden");
 		return this.generateBlockedResponse(
 				"The resource you are trying to reach is too big. Size: "
 						+ size, response);
@@ -326,8 +335,13 @@ public class RequestFilter {
 	private HttpResponseImpl generateBlockedResponse(final String string,
 			final HttpResponseImpl response) {
 		try {
-			final String body = "<title>Feedback Page</title><html><body><h1>"
-					+ string + "<h1></body></html>";
+			final String body = "<title>Feedback Page</title><html><body><h1 style='font:25px arial,sans-serif;font-weight:900;'>"
+					+ response.getStatusCode()
+					+ " "
+					+ response.getReasonPhrase()
+					+ "</h1><h2 style='font:20px arial,sans-serif;font-weight:900;'>"
+					+ string
+					+ "<h2><h3 style='font:12px arial,sans-serif;font-weight:300;'>Contact the Administrator</h3></body></html>";
 
 			response.appendHeader("Content-Length",
 					String.valueOf(body.length()));
