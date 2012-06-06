@@ -140,21 +140,6 @@ public abstract class Block {
 						InetAddress.getByName(req.getHost()).getHostAddress(),
 						resp);
 			}
-			if (this.images) {
-				if (resp.containsType("image/.*")) {
-					System.out.println("ENTRA a las fotos RequestFilter");
-					Statistics.getInstance().incrementTransformations();
-					this.rotateImage(resp);
-				}
-			}
-			if (this.leet) {
-				if (resp.containsType("text/plain.*")) {
-					String body = new String(resp.getBody());
-					body = body.replace('a', '4').replace('e', '3')
-							.replace('i', '1').replace('o', '0');
-					resp.setBody(body.getBytes());
-				}
-			}
 			if (this.urisBlocked(req)) {
 				Statistics.getInstance().incrementSiteBlocks();
 				return ResponseGenerator.generateBlockedResponseByUri(req
@@ -177,7 +162,7 @@ public abstract class Block {
 		} catch (final UnknownHostException e) {
 			e.printStackTrace();
 		}
-		return resp;
+		return null;
 	}
 
 	private boolean isMediaTypeBlockable(final HttpResponseImpl response) {
@@ -221,66 +206,7 @@ public abstract class Block {
 		return false;
 	}
 
-	private void rotateImage(final HttpResponseImpl response) {
-		try {
-			final byte[] bodyImageBytes = response.getBody();
-			final String format = response.getHeader("Content-Type").split("/")[1];
-			final byte[] imageBytes = this.rotateBytes(bodyImageBytes, format);
-			response.replaceHeader("Content-Length",
-					String.valueOf(imageBytes.length));
-			response.removeHeader("Content-Encoding");
-			response.setBody(imageBytes);
-		} catch (final ImageException e) {
-			throw new CloseException(e.getMessage());
-		}
 
-	}
-
-	private byte[] rotateBytes(final byte[] rawImageBytes, final String format)
-			throws ImageException {
-		int width;
-		int height;
-		final double radians = Math.PI;// 180 grados
-		BufferedImage newImage = null;
-		BufferedImage oldImage = null;
-		final ByteArrayOutputStream resp;
-
-		try {
-			oldImage = ImageIO.read(new ByteArrayInputStream(rawImageBytes));
-
-		} catch (final IOException e) {
-			throw new ImageException("Error en la imagen");
-		}
-
-		width = oldImage.getWidth();
-		height = oldImage.getHeight();
-
-		try {
-			newImage = new BufferedImage(width, height, oldImage.getType());
-		} catch (final IllegalArgumentException e) {
-			e.printStackTrace();
-		}
-		final Graphics2D graph = newImage.createGraphics();
-		graph.rotate(radians, width / 2, height / 2);
-		graph.drawImage(oldImage, null, 0, 0);
-
-		resp = new ByteArrayOutputStream(width * height);
-		try {
-			ImageIO.write(newImage, format, resp);
-		} catch (final IOException e) {
-			System.out.println("error al guardar la imagen");
-			e.printStackTrace();
-		}
-
-		try {
-			resp.flush();
-		} catch (final IOException e) {
-			System.out.println("flush error");
-			e.printStackTrace();
-		}
-
-		return resp.toByteArray();
-	}
 
 	@Override
 	public abstract boolean equals(Object b);
